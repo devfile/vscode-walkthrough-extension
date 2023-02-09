@@ -1,0 +1,121 @@
+{
+  "name": "vscode-devfile",
+  "publisher": "redhat",
+  "displayName": "vscode-devfile",
+  "description": "Allows the user to easily create a Devfile",
+  "version": "0.0.1",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vitaliy-guliy/vscode-devfile"
+  },
+
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+
+  "categories": [
+    "Other"
+  ],
+
+  "activationEvents": [
+  ],
+
+  "main": "./out/devfile-extension.js",
+
+  "scripts": {
+    "build-vsix": "vsce package --out redhat-vscode-devfile-0.0.1.vsix",
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "cleanup": "rm -f ./redhat-vscode-devfile-0.0.1.vsix && rm -rf ./out"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/glob": "^8.0.1",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "@typescript-eslint/parser": "^5.49.0",
+    "eslint": "^8.33.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.1.0",
+    "typescript": "^4.9.4",
+    "@vscode/test-electron": "^2.2.2"
+  },
+
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-devfile.new-devfile",
+        "title": "Devfile :: New Devfile"
+      },
+      {
+        "command": "vscode-devfile.new-container-component",
+        "title": "Devfile :: New Component"
+      },
+      {
+        "command": "vscode-devfile.new-command",
+        "title": "Devfile :: New Command"
+      },
+      {
+        "command": "vscode-devfile.generate-devfile",
+        "title": "Devfile :: Generate Devfile"
+      }
+    ],
+
+    "walkthroughs": [
+      {
+        "id": "create-devfile",
+        "title": "Create a Devfile",
+        "description": "This wizard will help you create a Devfile with some components and commands",
+        "icon": "media/default.png",
+        "steps": [
+          {
+            "id": "devfile-name",
+            "title": "New Devfile",
+            "description": "Start with creating a Devfile\n[New Devfile](command:vscode-devfile.new-devfile)",
+            "media": { "markdown": "media/new-devfile.md" },
+            "completionEvents": ["onCommand:vscode-devfile.new-devfile"]
+          },
+          {
+            "id": "add-container-component",
+            "title": "Add Component",
+            "description": "Adding a container component\n[New Component](command:vscode-devfile.new-container-component)",
+            "media": { "markdown": "media/new-container-component.md" },
+            "completionEvents": []
+          },
+          {
+            "id": "add-command",
+            "title": "Add Command",
+            "description": "Adding a command\n[New Command](command:vscode-devfile.new-command)",
+            "media": { "markdown": "media/new-command.md" },
+            "completionEvents": []
+          },
+          {
+            "id": "generate-devfile",
+            "title": "Generate Devfile",
+            "description": "You are ready to get a new Devfile\n[Get Devfile](command:vscode-devfile.generate-devfile)",
+            "media": { "markdown": "media/markdown.md" },
+            "completionEvents": []
+          }
+        ]
+      }
+    ],
+
+		"configuration": {
+			"title": "Get started with Devfile",
+			"properties": {
+				"vscode-devfile.new-devfile-name": {
+					"description": "Name of a new Devfile",
+					"type": "string"
+				}
+			}
+		}
+
+  }
+
+}
