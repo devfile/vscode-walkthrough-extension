@@ -54,7 +54,7 @@
         "title": "Devfile :: New Devfile"
       },
       {
-        "command": "vscode-devfile.new-container-component",
+        "command": "vscode-devfile.new-component",
         "title": "Devfile :: New Component"
       },
       {
@@ -62,8 +62,8 @@
         "title": "Devfile :: New Command"
       },
       {
-        "command": "vscode-devfile.generate-devfile",
-        "title": "Devfile :: Generate Devfile"
+        "command": "vscode-devfile.save-devfile",
+        "title": "Devfile :: Save Devfile"
       }
     ],
 
@@ -77,15 +77,15 @@
           {
             "id": "devfile-name",
             "title": "New Devfile",
-            "description": "Start with creating a Devfile\n[New Devfile](command:vscode-devfile.new-devfile)",
+            "description": "Start with creating a Devfile\n[Create](command:vscode-devfile.new-devfile)",
             "media": { "markdown": "media/new-devfile.md" },
             "completionEvents": ["onCommand:vscode-devfile.new-devfile"]
           },
           {
-            "id": "add-container-component",
+            "id": "add-component",
             "title": "Add Component",
-            "description": "Adding a container component\n[New Component](command:vscode-devfile.new-container-component)",
-            "media": { "markdown": "media/new-container-component.md" },
+            "description": "Adding a container component\n[New Component](command:vscode-devfile.new-component)",
+            "media": { "markdown": "media/new-component.md" },
             "completionEvents": []
           },
           {
@@ -97,9 +97,9 @@
           },
           {
             "id": "generate-devfile",
-            "title": "Generate Devfile",
-            "description": "You are ready to get a new Devfile\n[Get Devfile](command:vscode-devfile.generate-devfile)",
-            "media": { "markdown": "media/markdown.md" },
+            "title": "Save Devfile",
+            "description": "You are ready to get a new Devfile and save it to the root of your project\n[Save](command:vscode-devfile.save-devfile)",
+            "media": { "markdown": "media/generate-yaml.md" },
             "completionEvents": []
           }
         ]

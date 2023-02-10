@@ -1,191 +1,308 @@
 import * as vscode from 'vscode';
 import { posix } from 'path';
-
-let output: vscode.OutputChannel | undefined;
-
-function log(msg: string) {
-	output?.appendLine(msg);
-}
+import { ComponentContainer, Devfile, EnvironmentVariable, ExposedPort } from './devfile-api';
+import { DevfileWriter } from './devfile-writer';
+import { log } from './logger';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-
-	output = vscode.window.createOutputChannel('devfile-extension');
-	output.show(true);
-	// output.appendLine('> Initializing');
-	// console.log('Congratulations, your extension "vscode-devfile" is now active!');
-
-	new DevfileGenerator(context);
-
-	// output.appendLine('> Extension Initialized');
-	// output.appendLine('');
+	new DevfileExtension(context);
 }
 
 
 // This method is called when your extension is deactivated
 export function deactivate() { }
 
-const DEF_DEVFILE_NAME = 'devfile-sample';
+// const DEF_DEVFILE_NAME = 'devfile-sample';
 
-const DEF_CONTAINER_COMPONENT_NAME = 'dev';
-const DEF_CONTAINER_COMPONENT_IMAGE = 'quay.io/devfile/universal-developer-image:latest';
-const DEF_CONTAINER_COMPONENT_MEMORY_LIMIT = '2048Mi';
-const DEF_CONTAINER_COMPONENT_CPU_LIMIT = '0.5';
+// const DEF_CONTAINER_COMPONENT_NAME = 'dev';
+// const DEF_CONTAINER_COMPONENT_IMAGE = 'quay.io/devfile/universal-developer-image:latest';
+// const DEF_CONTAINER_COMPONENT_MEMORY_LIMIT = '2048Mi';
+// const DEF_CONTAINER_COMPONENT_CPU_LIMIT = '0.5';
 
-export interface ExposedPort {
-	visibility: 'public' | 'private';
-	name: string;
-	protocol: string;
-	port: number;
-}
+export class DevfileExtension {
 
-export interface EnvironmentVariable {
-	name: string;
-	value: string;
-}
+	private devfile: Devfile | undefined;
 
-export class DevfileGenerator {
+	// private devfileName: string | undefined = DEF_DEVFILE_NAME;
 
-	private devfileName: string | undefined = DEF_DEVFILE_NAME;
+	// private containerComponentName: string | undefined = DEF_CONTAINER_COMPONENT_NAME;
+	// private containerComponentImage: string | undefined = DEF_CONTAINER_COMPONENT_IMAGE;
+	// private containerComponentMemoryLimit: string | undefined = DEF_CONTAINER_COMPONENT_MEMORY_LIMIT;
+	// private containerComponentCpuLimit: string | undefined = DEF_CONTAINER_COMPONENT_CPU_LIMIT;
 
-	private containerComponentName: string | undefined = DEF_CONTAINER_COMPONENT_NAME;
-	private containerComponentImage: string | undefined = DEF_CONTAINER_COMPONENT_IMAGE;
-	private containerComponentMemoryLimit: string | undefined = DEF_CONTAINER_COMPONENT_MEMORY_LIMIT;
-	private containerComponentCpuLimit: string | undefined = DEF_CONTAINER_COMPONENT_CPU_LIMIT;
-
-	private containerExposedPorts: ExposedPort[] = [];
-	private containerEnvironmentVariables: EnvironmentVariable[] = [];
+	// private containerExposedPorts: ExposedPort[] = [];
+	// private containerEnvironmentVariables: EnvironmentVariable[] = [];
 
 	constructor(context: vscode.ExtensionContext) {
-		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-devfile', async () => this.nameTheDevfile()));
-		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-container-component', async () => this.newContainerComponent()));
+		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-devfile', async () => this.newDevfile()));
+		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-component', async () => this.newComponent()));
 		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-command', async () => this.newCommand()));
-		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.generate-devfile', async () => this.generateDevfile()));
+		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.save-devfile', async () => this.saveDevfile()));
 	}
 
-	public async nameTheDevfile(): Promise<void> {
-		await new Promise(resolve => setTimeout(resolve, 500));
+	public async newDevfile(): Promise<void> {
+		this.devfile = undefined;
 
-		this.devfileName = await vscode.window.showInputBox({
-			// prompt: 'Prompt',
-			// placeHolder: 'placeHolder',
-			value: DEF_DEVFILE_NAME,
-			title: 'Devfile Name'
+		const name = await vscode.window.showInputBox({
+			value: 'devfile-sample',
+			title: 'New Devfile Name'
 		});
 
-		output?.appendLine(`.metadata.name: ${this.devfileName}`);
-
-		if (!this.devfileName) {
-			// output?.appendLine('<< returning');
+		if (!name) {
+			log('<< canceled');
 			return;
 		}
 
-		try {
-			await vscode.workspace.getConfiguration('vscode-devfile').update('new-devfile-name', `${this.devfileName}`);
-		} catch (err) {
-			output?.appendLine(`>> ERROR ${err}`);
-		}
+		this.devfile = {
+			metadata: {
+				name
+			},
+			components: []
+		} as Devfile;
+
+		log(new DevfileWriter(this.devfile).getMetadata());
+
+		// try {
+		// 	await vscode.workspace.getConfiguration('vscode-devfile').update('new-devfile-name', `${this.devfileName}`);
+		// } catch (err) {
+		// 	output?.appendLine(`>> ERROR ${err}`);
+		// }
 	}
 
-	public async newContainerComponent(): Promise<void> {
-		// cleanup
-		this.containerExposedPorts = [];
-		this.containerEnvironmentVariables = [];
+	public async newComponent(): Promise<void> {
+		if (await this.missingDevfile()) {
+			return;
+		}
 
 		// component name
-		this.containerComponentName = await vscode.window.showInputBox({
-			value: DEF_CONTAINER_COMPONENT_NAME,
-			title: 'Component Name'
-		});
-
-		if (!this.containerComponentName) {
-			output?.appendLine('  << returning');
+		const componentName = await this.defineComponentName();
+		if (!componentName) {
+			log('<< canceled');
 			return;
 		}
 
-		output?.appendLine(`.components[0].name: ${this.containerComponentName}`);
+		log(`> component name: ${componentName}`);
 
-		// component container image
-		this.containerComponentImage = await vscode.window.showInputBox({
-			value: DEF_CONTAINER_COMPONENT_IMAGE,
-			title: 'Component Image'
-		});
-
-		if (!this.containerComponentImage) {
-			output?.appendLine('  << returning');
+		// container component image
+		const containerImage = await this.defineComponentImage();
+		if (!containerImage) {
+			log('<< canceled');
 			return;
 		}
 
-		output?.appendLine(`.components[0].container.image: ${this.containerComponentImage}`);
+		log(`> container image: ${containerImage}`);
+
+		const container: ComponentContainer = {
+			image: containerImage,
+			mountSources: true
+		};
+
+		// add new component
+		this.devfile?.components.push({
+			name: componentName,
+			container
+		});
 
 		// memory limit, can be omitted
-		this.containerComponentMemoryLimit = await vscode.window.showInputBox({
-			value: DEF_CONTAINER_COMPONENT_MEMORY_LIMIT,
-			title: 'Memory Limit'
-		});
-
-		output?.appendLine(`.components[0].container.memoryLimit: ${this.containerComponentMemoryLimit}`);
+		const memoryLimit = await this.defineComponentMemoryLimit();
+		if (memoryLimit) {
+			log(`> memory limit: ${memoryLimit}`);
+			container.memoryLimit = memoryLimit;
+		} else {
+			log('<< canceled');
+		}
 
 		// CPU limit, can be omitted
-		this.containerComponentCpuLimit = await vscode.window.showInputBox({
-			value: DEF_CONTAINER_COMPONENT_CPU_LIMIT,
-			title: 'CPU Limit'
-		});
-
-		output?.appendLine(`.components[0].container.cpuLimit: ${this.containerComponentCpuLimit}`);
+		const cpuLimit = await this.defineComponentCpuLimit();
+		if (cpuLimit) {
+			log(`> cpu limit: ${cpuLimit}`);
+			container.cpuLimit = cpuLimit;
+		} else {
+			log('<< canceled');
+		}
 
 		// define endpoints
-		while (await this.doExposePort()) {
-			output?.appendLine('> expose port...');
+		while (await this.wantToExposePort(container.endpoints)) {
+			log('> expose port...');
 
-			const port = await this.defineExposedPort();
-			if (port) {
-				this.containerExposedPorts.push(port);
+			const exposedport = await this.defineExposedPort();
+			if (exposedport) {
+				if (!container.endpoints) {
+					container.endpoints = [];
+				}
+	
+				container.endpoints.push(exposedport);
 			} else {
-				output?.appendLine('<< got undefined.');
+				log('<< canceled');
 				break;
 			}
 		}
 
-		output?.appendLine(`> Exposed ports: ${this.containerExposedPorts.length}`);
-		for (const port of this.containerExposedPorts) {
-			output?.appendLine(`    [ Visibility: ${port.visibility}; Name: ${port.name}; Protocol: ${port.protocol}; Port: ${port.port}; ]`);
+		if (container.endpoints) {
+			log(`> Exposed ports: ${container.endpoints.length}`);
+			for (const port of container.endpoints) {
+				log(`    [ Visibility: ${port.visibility}; Name: ${port.name}; Protocol: ${port.protocol}; Port: ${port.port}; ]`);
+			}
 		}
 
 		// define environment variables
-		while (await this.doDefineEnvironmentVariable()) {
-			output?.appendLine('> define environment variable...');
+		while (await this.wantToDefineEnvironmentVariable(container.env)) {
+			log('> define environment variable...');
 
-			const variable = await this.defineEnvironmentVariable();
+			const variable = await this.defineEnvironmentVariable(container.env);
 			if (variable) {
-				this.containerEnvironmentVariables.push(variable);
+				if (!container.env) {
+					container.env = [];
+				}
+				container.env.push(variable);
 			} else {
-				output?.appendLine('<< got undefined.');
+				log('<< canceled');
 				break;
 			}
 		}
 
-		output?.appendLine(`> Environment variables: ${this.containerEnvironmentVariables.length}`);
-		for (const variable of this.containerEnvironmentVariables) {
-			output?.appendLine(`    [ Name: ${variable.name}; Value: ${variable.value}; ]`);
+		if (container.env) {
+			log(`> Environment variables: ${container.env.length}`);
+			for (const variable of container.env) {
+				log(`    [ Name: ${variable.name}; Value: ${variable.value}; ]`);
+			}
 		}
+
+		if (2 + 3 === 5) {
+			return;
+		}
+
+
+
+
 
 	}
 
-	private async doExposePort(): Promise<boolean> {
+	private async defineComponentName(): Promise<string | undefined> {
+		return await vscode.window.showInputBox({
+			value: this.devfile?.components.length === 0 ? 'dev' : '',
+			title: 'Component Name',
+
+			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+				if (!this.devfile) {
+					return {
+						message: 'Devfile is not created',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+
+				for (const c of this.devfile.components) {
+					if (c.name === value) {
+						return {
+							message: 'Component with this name already exists',
+							severity: vscode.InputBoxValidationSeverity.Error
+						} as vscode.InputBoxValidationMessage;
+					} else if (!value) {
+						return {
+							message: 'Component name cannot be empty',
+							severity: vscode.InputBoxValidationSeverity.Error
+						} as vscode.InputBoxValidationMessage;
+					}
+				}
+			}
+		});
+	}
+
+	private async defineComponentImage(): Promise<string | undefined> {
+		return await vscode.window.showInputBox({
+			value: this.devfile?.components.length === 0 ? 'quay.io/devfile/universal-developer-image:latest' : '',
+			title: 'Component Image',
+
+			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+				if (!this.devfile) {
+					return {
+						message: 'Devfile is not created',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+
+				for (const c of this.devfile.components) {
+					if (c.container && c.container.image === value) {
+						return {
+							message: 'Component with this image already exists',
+							severity: vscode.InputBoxValidationSeverity.Error
+						} as vscode.InputBoxValidationMessage;
+					} else if (!value) {
+						return {
+							message: 'Component name cannot be empty',
+							severity: vscode.InputBoxValidationSeverity.Error
+						} as vscode.InputBoxValidationMessage;
+					}
+				}
+			}
+		});
+	}
+
+	private async defineComponentMemoryLimit(): Promise<string | undefined> {
+		return await vscode.window.showInputBox({
+			value: this.devfile?.components.length === 1 ? '2048Mi' : '512Mi',
+			title: 'Memory Limit',
+
+			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+				if (!this.devfile) {
+					return {
+						message: 'Devfile is not created',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+
+				if (!value) {
+					return {
+						message: 'Memory limit cannot be empty',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+			}
+		});
+	}
+
+	private async defineComponentCpuLimit(): Promise<string | undefined> {
+		return await vscode.window.showInputBox({
+			value: '0.5',
+			title: 'CPU Limit',
+
+			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+				if (!this.devfile) {
+					return {
+						message: 'Devfile is not created',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+
+				if (!value) {
+					return {
+						message: 'CPU limit cannot be empty',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+			}
+		});
+	}
+
+	private async wantToExposePort(endpoints: ExposedPort[] | undefined): Promise<boolean> {
 		const exposePort = await vscode.window.showQuickPick([
 			'Yes', 'No'
 		], {
-			title: `Would you like to expose ${this.containerExposedPorts.length === 0 ? '' : 'one more '}port?`,
+			title: `Would you like to expose${endpoints && endpoints.length !== 0 ? ' one more ' : ' '}port?`,
 		});
 
 		return 'Yes' === exposePort;
 	}
 
-	private async doDefineEnvironmentVariable(): Promise<boolean> {
+	private async wantToDefineEnvironmentVariable(env: EnvironmentVariable[] | undefined): Promise<boolean> {
 		const defineVariable = await vscode.window.showQuickPick([
 			'Yes', 'No'
 		], {
-			title: `Would you like to define ${this.containerEnvironmentVariables.length === 0 ? '' : 'one more '}environment variable for the container?`,
+			title: `Would you like to define${env && env.length !== 0 ? ' one more ' : ' '}environment variable for the container?`,
 		});
 
 		return 'Yes' === defineVariable;
@@ -193,12 +310,12 @@ export class DevfileGenerator {
 
 	private async defineExposedPort(): Promise<ExposedPort | undefined> {
 		const visibility = await vscode.window.showQuickPick([
-			'public', 'private'
+			'public', 'internal'
 		], {
-			 title: 'Port Visibility'
+			title: 'Port Visibility'
 		});
 
-		output?.appendLine(`Visibility: ${visibility}`);
+		log(`Visibility: ${visibility}`);
 
 		if (!visibility) {
 			return undefined;
@@ -224,8 +341,8 @@ export class DevfileGenerator {
 
 		const portValue: number = Number.parseInt(port);
 
-		output?.appendLine(`Port value: ${portValue}`);
-		output?.appendLine(`Number.isInteger(portValue): ${Number.isInteger(portValue)}`);
+		log(`Port value: ${portValue}`);
+		log(`Number.isInteger(portValue): ${Number.isInteger(portValue)}`);
 
 		const protocol = await vscode.window.showInputBox({
 			value: 'http',
@@ -237,30 +354,33 @@ export class DevfileGenerator {
 		}
 
 		return {
-			visibility: visibility === 'public' ? 'public' : 'private',
+			visibility: visibility === 'public' ? 'public' : 'internal',
 			name: name,
 			port: portValue,
 			protocol: protocol
 		};
 	}
 
-	private async defineEnvironmentVariable(): Promise<EnvironmentVariable | undefined> {
+	private async defineEnvironmentVariable(env: EnvironmentVariable[] | undefined): Promise<EnvironmentVariable | undefined> {
+		const environment = env;
 		const name = await vscode.window.showInputBox({
-			value: this.containerEnvironmentVariables.length === 0 ? 'WELCOME' : '',
+			value: env && env.length !== 0 ? '' : 'WELCOME',
 			title: 'Environment Variable Name',
 			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-				for (const v of this.containerEnvironmentVariables) {
-					if (v.name === value) {
-						return {
-							message: 'Enviroment variable with this name already exists',
-							severity: vscode.InputBoxValidationSeverity.Error
-						} as vscode.InputBoxValidationMessage;
-					} else if (!value) {
-						return {
-							message: 'Environment variable name cannot be empty',
-							severity: vscode.InputBoxValidationSeverity.Error
-						} as vscode.InputBoxValidationMessage;
+				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+				if (environment) {
+					for (const v of environment) {
+						if (v.name === value) {
+							return {
+								message: 'Enviroment variable with this name already exists',
+								severity: vscode.InputBoxValidationSeverity.Error
+							} as vscode.InputBoxValidationMessage;
+						} else if (!value) {
+							return {
+								message: 'Environment variable name cannot be empty',
+								severity: vscode.InputBoxValidationSeverity.Error
+							} as vscode.InputBoxValidationMessage;
+						}
 					}
 				}
 
@@ -273,7 +393,7 @@ export class DevfileGenerator {
 		}
 
 		const value = await vscode.window.showInputBox({
-			value: this.containerEnvironmentVariables.length === 0 ? 'Hello World' : '',
+			value: env && env.length !== 0 ? '' : 'Hello World',
 			title: 'Environment Variable Value'
 		});
 
@@ -287,17 +407,31 @@ export class DevfileGenerator {
 		return {
 			name,
 			value
-		}
+		};
 	}
 
 	public async newCommand(): Promise<void> {
 		vscode.window.showInformationMessage('New Command');
 	}
 
-	public async generateDevfile(): Promise<void> {
-		if (await this.writeDevfile(this.getDevfileContent())) {
+	public async saveDevfile(): Promise<void> {
+		if (await this.missingDevfile()) {
+			return;
+		}
+
+		const content = new DevfileWriter(this.devfile!).toString();
+		if (await this.writeDevfile(content)) {
 			await this.openDevfile();
 		}
+	}
+
+	private async missingDevfile(): Promise<boolean> {
+		if (!this.devfile) {
+			await vscode.window.showErrorMessage('The first you need to create a Devfile');
+			return true;
+		}
+
+		return false;
 	}
 
 	private async writeDevfile(content: string): Promise<boolean> {
@@ -317,16 +451,16 @@ export class DevfileGenerator {
 			if (err instanceof vscode.FileSystemError) {
 				devfileExist = false;
 			} else {
-				output?.appendLine(`>> ERROR ${err}`);
+				log(`>> ERROR ${err}`);
 			}
 		}
 
-		output?.appendLine('');
-		output?.appendLine(`> devfile exist ${devfileExist}`);
+		log('');
+		log(`> devfile exist ${devfileExist}`);
 
 		if (devfileExist) {
 			const result = await vscode.window.showWarningMessage('Devfile already exists', 'Skip', 'Override');
-			output?.appendLine(`> result ${result}`);
+			log(`> result ${result}`);
 
 			if ('Override' === result) {
 				await vscode.workspace.fs.writeFile(devfileUri, Buffer.from(content, 'utf8'));
@@ -351,15 +485,6 @@ export class DevfileGenerator {
 		const folderUri = vscode.workspace.workspaceFolders[0].uri;
 		const devfileUri = folderUri.with({ path: posix.join(folderUri.path, 'devfile.yaml') });
 		vscode.window.showTextDocument(devfileUri);
-	}
-
-	public getDevfileContent(): string {
-		let content = `schemaVersion: 2.2.0
-metadata:
-  name: ${this.devfileName}
-`;
-
-		return content;
 	}
 
 }
