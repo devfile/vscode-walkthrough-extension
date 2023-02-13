@@ -1,4 +1,4 @@
-import { Component, Devfile } from "./devfile-api";
+import { Command, Component, Devfile } from "./devfile-api";
 
 const JOIN_STR = '\n';
 
@@ -11,7 +11,9 @@ export class DevfileWriter {
         return [
             this.getHeader(),
             this.getMetadata(),
-            this.getComponents()
+            this.getComponents(),
+            this.getCommands(),
+            ''
         ].join(JOIN_STR);
     }
 
@@ -36,6 +38,8 @@ export class DevfileWriter {
         for (const c of this.devfile.components) {
             if (c.container) {
                 arr.push(this.getContainerComponent(c));
+            } else {
+                arr.push(this.getVolumeComponent(c));
             }
         }
 
@@ -100,6 +104,26 @@ export class DevfileWriter {
 
     public getVolumeComponent(c: Component): string {
         return '';
+    }
+
+    public getCommands(): string {
+        if (this.devfile.commands.length === 0) {
+            return '';
+        }
+
+        const arr: string[] = ['commands:'];
+        
+        for (const c of this.devfile.commands) {
+            arr.push(
+                `  - id: ${c.id}`,
+                '    exec:',
+                `      component: ${c.component}`,
+                `      commandLine: ${c.commandLine}`,
+                `      workingDir: ${c.workingDir}`
+            );
+        }
+
+        return arr.join(JOIN_STR);
     }
 
 }

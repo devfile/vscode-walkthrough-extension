@@ -7,10 +7,9 @@ metadata:
 ```
 */
 export interface Devfile {
-
     metadata: Metadata;
     components: Component[];
-
+    commands: Command[];
 }
 
 export interface Metadata {
@@ -51,11 +50,11 @@ export interface ComponentContainer {
     cpuRequest?: string;
     cpuLimit?: string;
     mountSources?: boolean;
-    endpoints?: ExposedPort[];
+    endpoints?: Endpoint[];
     env?: EnvironmentVariable[];
 }
 
-export interface ExposedPort {
+export interface Endpoint {
 	visibility: 'public' | 'internal';
 	name: string;
 	protocol: string;
@@ -65,4 +64,21 @@ export interface ExposedPort {
 export interface EnvironmentVariable {
 	name: string;
 	value: string;
+}
+
+/**
+```
+commands:
+- id: say-hello
+  exec:
+    component: dev
+    commandLine: echo "${WELCOME}"
+    workingDir: ${PROJECT_SOURCE}
+```
+ */
+export interface Command {
+  id: string;
+  component: string;
+  commandLine: string;
+  workingDir: string;
 }

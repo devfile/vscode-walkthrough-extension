@@ -1,4 +1,4 @@
-# Metadata
+# Devfile
 
 To specify a static name for the workspace, define the name attribute.
 

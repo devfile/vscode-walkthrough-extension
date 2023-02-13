@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { posix } from 'path';
-import { ComponentContainer, Devfile, EnvironmentVariable, ExposedPort } from './devfile-api';
+import { Command, ComponentContainer, Devfile, Endpoint, EnvironmentVariable } from './devfile-api';
 import { DevfileWriter } from './devfile-writer';
 import { log } from './logger';
 
@@ -12,26 +12,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 // This method is called when your extension is deactivated
 export function deactivate() { }
 
-// const DEF_DEVFILE_NAME = 'devfile-sample';
-
-// const DEF_CONTAINER_COMPONENT_NAME = 'dev';
-// const DEF_CONTAINER_COMPONENT_IMAGE = 'quay.io/devfile/universal-developer-image:latest';
-// const DEF_CONTAINER_COMPONENT_MEMORY_LIMIT = '2048Mi';
-// const DEF_CONTAINER_COMPONENT_CPU_LIMIT = '0.5';
-
 export class DevfileExtension {
 
 	private devfile: Devfile | undefined;
-
-	// private devfileName: string | undefined = DEF_DEVFILE_NAME;
-
-	// private containerComponentName: string | undefined = DEF_CONTAINER_COMPONENT_NAME;
-	// private containerComponentImage: string | undefined = DEF_CONTAINER_COMPONENT_IMAGE;
-	// private containerComponentMemoryLimit: string | undefined = DEF_CONTAINER_COMPONENT_MEMORY_LIMIT;
-	// private containerComponentCpuLimit: string | undefined = DEF_CONTAINER_COMPONENT_CPU_LIMIT;
-
-	// private containerExposedPorts: ExposedPort[] = [];
-	// private containerEnvironmentVariables: EnvironmentVariable[] = [];
 
 	constructor(context: vscode.ExtensionContext) {
 		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-devfile', async () => this.newDevfile()));
@@ -41,7 +24,12 @@ export class DevfileExtension {
 	}
 
 	public async newDevfile(): Promise<void> {
-		this.devfile = undefined;
+		if (this.devfile) {
+			const answer = await vscode.window.showWarningMessage('You have already created Devfile.', 'Create New', 'Cancel');
+			if ('Create New' !== answer) {
+				return;
+			}
+		}
 
 		const name = await vscode.window.showInputBox({
 			value: 'devfile-sample',
@@ -57,20 +45,15 @@ export class DevfileExtension {
 			metadata: {
 				name
 			},
-			components: []
+			components: [],
+			commands: []
 		} as Devfile;
 
 		log(new DevfileWriter(this.devfile).getMetadata());
-
-		// try {
-		// 	await vscode.workspace.getConfiguration('vscode-devfile').update('new-devfile-name', `${this.devfileName}`);
-		// } catch (err) {
-		// 	output?.appendLine(`>> ERROR ${err}`);
-		// }
 	}
 
 	public async newComponent(): Promise<void> {
-		if (await this.missingDevfile()) {
+		if (await this.warnIfDevfileIsNotCreated()) {
 			return;
 		}
 
@@ -122,16 +105,16 @@ export class DevfileExtension {
 		}
 
 		// define endpoints
-		while (await this.wantToExposePort(container.endpoints)) {
+		while (await this.wantToDefineEndpoint(container.endpoints)) {
 			log('> expose port...');
 
-			const exposedport = await this.defineExposedPort();
-			if (exposedport) {
+			const endpoint = await this.defineEndpoint(container.endpoints);
+			if (endpoint) {
 				if (!container.endpoints) {
 					container.endpoints = [];
 				}
 	
-				container.endpoints.push(exposedport);
+				container.endpoints.push(endpoint);
 			} else {
 				log('<< canceled');
 				break;
@@ -139,7 +122,7 @@ export class DevfileExtension {
 		}
 
 		if (container.endpoints) {
-			log(`> Exposed ports: ${container.endpoints.length}`);
+			log(`> Endpoints: ${container.endpoints.length}`);
 			for (const port of container.endpoints) {
 				log(`    [ Visibility: ${port.visibility}; Name: ${port.name}; Protocol: ${port.protocol}; Port: ${port.port}; ]`);
 			}
@@ -167,15 +150,6 @@ export class DevfileExtension {
 				log(`    [ Name: ${variable.name}; Value: ${variable.value}; ]`);
 			}
 		}
-
-		if (2 + 3 === 5) {
-			return;
-		}
-
-
-
-
-
 	}
 
 	private async defineComponentName(): Promise<string | undefined> {
@@ -288,11 +262,11 @@ export class DevfileExtension {
 		});
 	}
 
-	private async wantToExposePort(endpoints: ExposedPort[] | undefined): Promise<boolean> {
+	private async wantToDefineEndpoint(endpoints: Endpoint[] | undefined): Promise<boolean> {
 		const exposePort = await vscode.window.showQuickPick([
 			'Yes', 'No'
 		], {
-			title: `Would you like to expose${endpoints && endpoints.length !== 0 ? ' one more ' : ' '}port?`,
+			title: `Would you like to define${endpoints && endpoints.length !== 0 ? ' one more ' : ' '}endpoint for the container?`,
 		});
 
 		return 'Yes' === exposePort;
@@ -308,11 +282,13 @@ export class DevfileExtension {
 		return 'Yes' === defineVariable;
 	}
 
-	private async defineExposedPort(): Promise<ExposedPort | undefined> {
+	private async defineEndpoint(endpoints: Endpoint[] | undefined): Promise<Endpoint | undefined> {
+		const exposedPorts = endpoints;
+
 		const visibility = await vscode.window.showQuickPick([
 			'public', 'internal'
 		], {
-			title: 'Port Visibility'
+			title: 'Endpoint Visibility'
 		});
 
 		log(`Visibility: ${visibility}`);
@@ -322,8 +298,31 @@ export class DevfileExtension {
 		}
 
 		const name = await vscode.window.showInputBox({
-			value: 'http-demo',
-			title: 'Port Name'
+			value: exposedPorts && exposedPorts.length !== 0 ? '' : 'http-demo',
+			title: 'Endpoint Name',
+
+			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+				if (!value) {
+					return {
+						message: 'Endpoint name cannot be empty',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+			
+				if (exposedPorts) {
+					for (const p of exposedPorts) {
+						if (p.name === value) {
+							return {
+								message: 'Endpoint with this name already exists',
+								severity: vscode.InputBoxValidationSeverity.Error
+							} as vscode.InputBoxValidationMessage;
+						}
+					}
+				}
+
+				return undefined;
+			}
 		});
 
 		if (!name) {
@@ -331,8 +330,39 @@ export class DevfileExtension {
 		}
 
 		const port = await vscode.window.showInputBox({
-			value: '8080',
-			title: 'Target Port'
+			value: exposedPorts && exposedPorts.length !== 0 ? '' : '8080',
+			title: 'Target Port',
+
+			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+				if (!value) {
+					return {
+						message: 'Target port cannot be empty',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+
+				const pValue: number = Number.parseInt(value);
+				if (!Number.isInteger(pValue)) {
+					return {
+						message: 'Only Integer is allowed',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+
+				if (exposedPorts) {
+					for (const p of exposedPorts) {
+						if (p.port === pValue) {
+							return {
+								message: 'Endpoint with this port already exists',
+								severity: vscode.InputBoxValidationSeverity.Error
+							} as vscode.InputBoxValidationMessage;
+						}
+					}
+				}
+
+				return undefined;
+			}
 		});
 
 		if (!port) {
@@ -346,7 +376,20 @@ export class DevfileExtension {
 
 		const protocol = await vscode.window.showInputBox({
 			value: 'http',
-			title: 'Protocol'
+			title: 'Protocol',
+
+			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+				if (!value) {
+					return {
+						message: 'Empty value is not allowed',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+
+				return undefined;
+			}
+
 		});
 
 		if (!protocol) {
@@ -368,16 +411,19 @@ export class DevfileExtension {
 			title: 'Environment Variable Name',
 			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
 				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+
+				if (!value) {
+					return {
+						message: 'Environment variable name cannot be empty',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+				
 				if (environment) {
 					for (const v of environment) {
 						if (v.name === value) {
 							return {
 								message: 'Enviroment variable with this name already exists',
-								severity: vscode.InputBoxValidationSeverity.Error
-							} as vscode.InputBoxValidationMessage;
-						} else if (!value) {
-							return {
-								message: 'Environment variable name cannot be empty',
 								severity: vscode.InputBoxValidationSeverity.Error
 							} as vscode.InputBoxValidationMessage;
 						}
@@ -411,11 +457,166 @@ export class DevfileExtension {
 	}
 
 	public async newCommand(): Promise<void> {
-		vscode.window.showInformationMessage('New Command');
+		// the Devfile object should be already created
+		if (await this.warnIfDevfileIsNotCreated()) {
+			return;
+		}
+
+		// user has alreadt created at least one container component
+		let containerComponents = 0;
+		for (const c of this.devfile!.components) {
+			if (c.container) {
+				containerComponents++;
+			}
+		}
+
+		if (containerComponents === 0) {
+			await vscode.window.showErrorMessage('The first you need to create a component');
+			true;
+		}
+
+		let askForCommand = false;
+
+		while (await this.wantToAddCommand(askForCommand)) {
+			askForCommand = true;
+
+			log('>> add command');
+			const command = await this.defineCommand();
+			if (command) {
+				this.devfile?.commands.push(command);
+			} else {
+				log('<< canceled');
+				break;
+			}
+		}
+	}
+
+	private async wantToAddCommand(askForCommand: boolean): Promise<boolean> {
+		if (!askForCommand) {
+			return true;
+		}
+
+		// if the Devfile has no command defined, we assume the user wants to add at least one
+		log(`>>> commands: ${this.devfile?.commands.length}`);
+		if (this.devfile?.commands.length === 0) {
+			return true;
+		}
+
+		const answer = await vscode.window.showQuickPick([
+			'Yes', 'No'
+		], {
+			title: 'Would you like to add one more command?',
+		});
+
+		return 'Yes' === answer;
+	}
+
+	private async defineCommand(): Promise<Command | undefined> {
+		const commands = this.devfile!.commands;
+
+		const id = await vscode.window.showInputBox({
+			value: 'say-hello',
+			title: 'Command Identifier',
+
+			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+
+				if (!value) {
+					return {
+						message: 'Command identifier cannot be empty',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+
+				for (const c of commands) {
+					if (c.id === value) {
+						return {
+							message: 'A command with this identifier alredy exists',
+							severity: vscode.InputBoxValidationSeverity.Error
+						} as vscode.InputBoxValidationMessage;
+					}
+				}
+
+				return undefined;
+			}
+
+		});
+
+		if (!id) {
+			return undefined;
+		}
+
+		const componentNames: string[] = [];
+		for (const c of this.devfile!.components) {
+			// take only container component
+			if (c.container) {
+				componentNames.push(c.name);
+			}
+		}
+
+		const component = await vscode.window.showQuickPick(componentNames, {
+			title: 'Select a component in which the command will be executed',
+		});
+
+		if (!component) {
+			return undefined;
+		}
+
+		const commandLine = await vscode.window.showInputBox({
+			value: 'echo "${WELCOME}"',
+			title: 'Enter command line to be executed',
+
+			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+
+				if (!value) {
+					return {
+						message: 'Command line cannot be empty',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+
+				return undefined;
+			}
+
+		});
+
+		if (!commandLine) {
+			return undefined;
+		}
+
+		const workingDir = await vscode.window.showInputBox({
+			value: '${PROJECT_SOURCE}',
+			title: 'Enter the working directory for your commnd',
+
+			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+
+				if (!value) {
+					return {
+						message: 'Working directory cannot be empty',
+						severity: vscode.InputBoxValidationSeverity.Error
+					} as vscode.InputBoxValidationMessage;
+				}
+
+				return undefined;
+			}
+		});
+
+		if (!workingDir) {
+			return undefined;
+		}
+
+		return {
+			id,
+			component,
+			commandLine,
+			workingDir
+		};
 	}
 
 	public async saveDevfile(): Promise<void> {
-		if (await this.missingDevfile()) {
+		if (await this.warnIfDevfileIsNotCreated()) {
 			return;
 		}
 
@@ -425,7 +626,7 @@ export class DevfileExtension {
 		}
 	}
 
-	private async missingDevfile(): Promise<boolean> {
+	private async warnIfDevfileIsNotCreated(): Promise<boolean> {
 		if (!this.devfile) {
 			await vscode.window.showErrorMessage('The first you need to create a Devfile');
 			return true;
@@ -459,10 +660,10 @@ export class DevfileExtension {
 		log(`> devfile exist ${devfileExist}`);
 
 		if (devfileExist) {
-			const result = await vscode.window.showWarningMessage('Devfile already exists', 'Skip', 'Override');
-			log(`> result ${result}`);
+			const answer = await vscode.window.showWarningMessage('Devfile already exists', 'Override', 'Skip');
+			log(`> answer ${answer}`);
 
-			if ('Override' === result) {
+			if ('Override' === answer) {
 				await vscode.workspace.fs.writeFile(devfileUri, Buffer.from(content, 'utf8'));
 			} else {
 				return false;

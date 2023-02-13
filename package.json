@@ -104,17 +104,7 @@
           }
         ]
       }
-    ],
-
-		"configuration": {
-			"title": "Get started with Devfile",
-			"properties": {
-				"vscode-devfile.new-devfile-name": {
-					"description": "Name of a new Devfile",
-					"type": "string"
-				}
-			}
-		}
+    ]
 
   }
 
