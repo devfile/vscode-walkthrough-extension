@@ -33,6 +33,12 @@
     "test": "node ./out/test/runTest.js",
     "cleanup": "rm -f ./redhat-vscode-devfile-0.0.1.vsix && rm -rf ./out"
   },
+
+  "dependencies": {
+    "inversify": "^5.0.1",
+    "reflect-metadata": "^0.1.13"
+  },
+
   "devDependencies": {
     "@types/vscode": "^1.74.0",
     "@types/glob": "^8.0.1",

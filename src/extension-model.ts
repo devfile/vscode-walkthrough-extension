@@ -8,15 +8,10 @@
  * SPDX-License-Identifier: EPL-2.0
  ***********************************************************************/
 
-import * as vscode from 'vscode';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const DevfileExtension = Symbol('DevfileExtension');
+// export const devfileExtension = Symbol('DevfileExtension');
 
-let output: vscode.OutputChannel | undefined = undefined;
+export interface DevfileExtension {
 
-export function log(msg: string) {
-    if (!output) {
-        output = vscode.window.createOutputChannel('devfile-extension');
-        output.show(true);
-    }
-
-    output?.appendLine(msg);
 }

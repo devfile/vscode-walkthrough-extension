@@ -1,20 +1,40 @@
-import { Command, Component, Devfile } from "./devfile-api";
+/**********************************************************************
+ * Copyright (c) 2023 Red Hat, Inc.
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ***********************************************************************/
+
+import * as devfile from "../devfile";
 
 const JOIN_STR = '\n';
 
-export class DevfileWriter {
+export class DevfileSerializer {
 
-    constructor(private devfile: Devfile) {
+    constructor(private devfile: devfile.Devfile) {
     }
 
     public toString(): string {
-        return [
+        const content: string[] = [
             this.getHeader(),
-            this.getMetadata(),
-            this.getComponents(),
-            this.getCommands(),
-            ''
-        ].join(JOIN_STR);
+            this.getMetadata()
+        ];
+        
+        const components = this.getComponents();
+        if (components) {
+            content.push(components);
+        }
+
+        const commands = this.getCommands();
+        if (commands) {
+            content.push(commands);
+        }
+
+        content.push('');
+        return content.join(JOIN_STR);
     }
 
     public getHeader(): string {
@@ -46,7 +66,7 @@ export class DevfileWriter {
         return arr.join(JOIN_STR);
     }
 
-    public getContainerComponent(c: Component): string {
+    public getContainerComponent(c: devfile.Component): string {
         const arr: string[] = [
             `  - name: ${c.name}`,
             '    container:'
@@ -102,7 +122,7 @@ export class DevfileWriter {
         return arr.join(JOIN_STR);
     }
 
-    public getVolumeComponent(c: Component): string {
+    public getVolumeComponent(c: devfile.Component): string {
         return '';
     }
 
