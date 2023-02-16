@@ -15,7 +15,11 @@
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
-			"preLaunchTask": "${defaultBuildTask}"
+			"preLaunchTask": "${defaultBuildTask}",
+
+			"env": {
+				"TEST_DEVWORKSPACE_NAME": "remote-plugin-runner"
+			}
 		},
 		{
 			"name": "Extension Tests",

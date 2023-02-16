@@ -8,10 +8,19 @@
  * SPDX-License-Identifier: EPL-2.0
  ***********************************************************************/
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const DevfileExtension = Symbol('DevfileExtension');
-// export const devfileExtension = Symbol('DevfileExtension');
+import * as devfile from "../devfile";
 
-export interface DevfileExtension {
+export function countContainerComponents(devfile: devfile.Devfile): number {
+    if (!devfile.components) {
+        return 0;
+    }
 
+    let containerComponents = 0;
+    for (const c of devfile.components) {
+        if (c.container) {
+            containerComponents++;
+        }
+    }
+
+    return containerComponents;
 }

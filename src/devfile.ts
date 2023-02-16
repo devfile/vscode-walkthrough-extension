@@ -8,45 +8,17 @@
  * SPDX-License-Identifier: EPL-2.0
  ***********************************************************************/
 
-/**
-```
-schemaVersion: 2.2.0
-metadata:
-  name: devfile-sample
-```
-*/
 export interface Devfile {
-  metadata: Metadata;
-  components: Component[];
-  commands: Command[];
+  schemaVersion?: string;
+  metadata?: Metadata;
+  components?: Component[];
+  commands?: Command[];
 }
 
 export interface Metadata {
-    name: string;
+    name?: string;
 }
 
-/**
-```
-components:
-  - name: dev
-    container:
-        image: quay.io/devfile/universal-developer-image:latest
-        memoryRequest: 256Mi
-        memoryLimit: 2048Mi
-        cpuRequest: 0.1
-        cpuLimit: 0.5
-        mountSources: true
-        endpoints:
-          - exposure: public
-            name: http-demo
-            protocol: http
-            targetPort: 8080
-        env:
-          - name: WELCOME
-            value: "Hello World"
-
-```
- */
 export interface Component {
     name: string;
     container?: ComponentContainer;
@@ -75,25 +47,25 @@ export interface EnvironmentVariable {
 	value: string;
 }
 
-/**
-```
-commands:
-- id: say-hello
-  exec:
-    component: dev
-    commandLine: echo "${WELCOME}"
-    workingDir: ${PROJECT_SOURCE}
-```
- */
 export interface Command {
   id: string;
+  exec: CommandExec;
+}
+
+export interface CommandExec {
   component: string;
   commandLine: string;
   workingDir: string;
+  label: string;
 }
 
-export interface DevfileHolder {
-
-  devfile: Devfile;
-
+export enum DevfileUpdateStrategy {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Forbidden = 0,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Silent = 1,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  ConfirmUpdate = 2,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  ConfirmRewrite = 3
 }

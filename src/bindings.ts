@@ -9,13 +9,15 @@
  ***********************************************************************/
 
 import { Container } from 'inversify';
-import { NewCommand } from './command/new-command';
-import { NewComponent } from './command/new-component';
-import { NewDevfile } from './command/new-devfile';
-import { SaveDevfile } from './command/save-devfile';
+import { NewCommandImpl } from './command/new-command';
+import { NewComponent } from './command/new-component-deprecated';
+import { NewContainerImpl } from './command/new-container';
+import { SaveDevfileImpl } from './command/save-devfile';
 import { DevfileExtensionImpl } from './devfile-extension';
 import { DevfileService } from './devfile/devfile-service';
-import { DevfileExtension } from './extension-model';
+import { DevfileExtension, NewCommand, NewContainer, NewEndpoint, SaveDevfile } from './model/extension-model';
+import { NewEnvironmentVariable } from './command/new-environment-variable';
+import { NewEndpointImpl } from './command/new-endpoint';
 
 export function initBindings(): Container {
     const container = new Container();
@@ -24,10 +26,21 @@ export function initBindings(): Container {
     container.bind(DevfileExtension).toService(DevfileExtensionImpl);
 
     container.bind(DevfileService).toSelf().inSingletonScope();
-    container.bind(NewDevfile).toSelf().inSingletonScope();
     container.bind(NewComponent).toSelf().inSingletonScope();
-    container.bind(NewCommand).toSelf().inSingletonScope();
-    container.bind(SaveDevfile).toSelf().inSingletonScope();
+    
+    container.bind(NewCommandImpl).toSelf().inSingletonScope();
+    container.bind(NewCommand).toService(NewCommandImpl);
+    
+    container.bind(SaveDevfileImpl).toSelf().inSingletonScope();
+    container.bind(SaveDevfile).toService(SaveDevfileImpl);
+
+    container.bind(NewContainerImpl).toSelf().inSingletonScope();
+    container.bind(NewContainer).toService(NewContainerImpl);
+
+    container.bind(NewEndpointImpl).toSelf().inSingletonScope();
+    container.bind(NewEndpoint).toService(NewEndpointImpl);
+
+    container.bind(NewEnvironmentVariable).toSelf().inSingletonScope();
 
     return container;
 }

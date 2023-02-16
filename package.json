@@ -19,12 +19,14 @@
   ],
 
   "activationEvents": [
+    "*"
   ],
 
   "main": "./out/devfile-extension.js",
 
   "scripts": {
     "build-vsix": "vsce package --out redhat-vscode-devfile-0.0.1.vsix",
+    "build-vsix-ignorewarnings": "vsce package --allow-star-activation --out redhat-vscode-devfile-0.0.1.vsix",
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
@@ -36,7 +38,8 @@
 
   "dependencies": {
     "inversify": "^5.0.1",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "js-yaml": "^3.13.1"
   },
 
   "devDependencies": {
@@ -55,21 +58,27 @@
 
   "contributes": {
     "commands": [
+
       {
-        "command": "vscode-devfile.new-devfile",
-        "title": "Devfile :: New Devfile"
+        "command": "vscode-devfile.new-container",
+        "title": "Devfile: New Container"
       },
       {
-        "command": "vscode-devfile.new-component",
-        "title": "Devfile :: New Component"
+        "command": "vscode-devfile.new-endpoint",
+        "title": "Devfile: New Container Endpoint"
+      },
+      {
+        "command": "vscode-devfile.new-environment-variable",
+        "title": "Devfile: New Container Environment Variable"
       },
       {
         "command": "vscode-devfile.new-command",
-        "title": "Devfile :: New Command"
+        "title": "Devfile: New Command"
       },
+
       {
         "command": "vscode-devfile.save-devfile",
-        "title": "Devfile :: Save Devfile"
+        "title": "Devfile: Save Devfile"
       }
     ],
 
@@ -80,18 +89,26 @@
         "description": "This wizard will help you create a Devfile with some components and commands",
         "icon": "media/default.png",
         "steps": [
+
           {
-            "id": "devfile-name",
-            "title": "New Devfile",
-            "description": "Start with creating a Devfile\n[Create](command:vscode-devfile.new-devfile)",
-            "media": { "markdown": "media/new-devfile.md" },
-            "completionEvents": ["onCommand:vscode-devfile.new-devfile"]
+            "id": "add-container",
+            "title": "Add Container",
+            "description": "Adding a container\n[New Container](command:vscode-devfile.new-container)",
+            "media": { "markdown": "media/new-container.md" },
+            "completionEvents": []
           },
           {
-            "id": "add-component",
-            "title": "Add Component",
-            "description": "Adding a container component\n[New Component](command:vscode-devfile.new-component)",
-            "media": { "markdown": "media/new-component.md" },
+            "id": "add-endpoint",
+            "title": "Add Container Endpoint",
+            "description": "Adding a container endpoint\n[New Endpoint](command:vscode-devfile.new-endpoint)",
+            "media": { "markdown": "media/new-endpoint.md" },
+            "completionEvents": []
+          },
+          {
+            "id": "add-environment-variable",
+            "title": "Add Container Environment Variable",
+            "description": "Adding a container environment variable\n[New Variable](command:vscode-devfile.new-environment-variable)",
+            "media": { "markdown": "media/new-environment-variable.md" },
             "completionEvents": []
           },
           {
@@ -99,13 +116,6 @@
             "title": "Add Command",
             "description": "Adding a command\n[New Command](command:vscode-devfile.new-command)",
             "media": { "markdown": "media/new-command.md" },
-            "completionEvents": []
-          },
-          {
-            "id": "generate-devfile",
-            "title": "Save Devfile",
-            "description": "You are ready to get a new Devfile and save it to the root of your project\n[Save](command:vscode-devfile.save-devfile)",
-            "media": { "markdown": "media/generate-yaml.md" },
             "completionEvents": []
           }
         ]

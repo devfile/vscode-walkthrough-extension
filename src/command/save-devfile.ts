@@ -11,79 +11,96 @@
 import * as vscode from 'vscode';
 import { inject, injectable } from "inversify";
 import { DevfileService } from "../devfile/devfile-service";
-import { DevfileSerializer } from '../devfile/devfile-serializer';
 import { log } from '../logger';
-import { posix } from 'path';
+import * as devfile from "../devfile";
+import { SaveDevfile } from '../model/extension-model';
 
 @injectable()
-export class SaveDevfile {
+export class SaveDevfileImpl implements SaveDevfile {
 
 	@inject(DevfileService)
 	private service: DevfileService;
 
-    async run(): Promise<void> {
-		if (!this.service.getDevfile()) {
-			await vscode.window.showErrorMessage('The first you need to create a Devfile');
-			return;
-		}
+    async run(): Promise<boolean> {
+		switch (this.service.getUpdateStrategy()) {
+			case devfile.DevfileUpdateStrategy.Forbidden:
+				await vscode.window.showErrorMessage('Unable to save the Devfile');
+				return false;
 
-		const content = new DevfileSerializer(this.service.getDevfile()!).toString();
+			case devfile.DevfileUpdateStrategy.Silent:
+				return await this.silentUpdate();
+			
+			case devfile.DevfileUpdateStrategy.ConfirmUpdate:
+				return await this.confirmUpdate();
 
-		if (await this.writeDevfile(content)) {
-			await this.openDevfile();
+			case devfile.DevfileUpdateStrategy.ConfirmRewrite:
+				return await this.confirmOverwrite();
 		}
     }
 
-	private async writeDevfile(content: string): Promise<boolean> {
-		if (!vscode.workspace.workspaceFolders ||
-			vscode.workspace.workspaceFolders.length === 0) {
-			await vscode.window.showInformationMessage('The first you need to open a project');
-			return false;
-		}
-
-		const folderUri = vscode.workspace.workspaceFolders[0].uri;
-		const devfileUri = folderUri.with({ path: posix.join(folderUri.path, 'devfile.yaml') });
-
-		let devfileExist = true;
-		try {
-			await vscode.workspace.fs.stat(devfileUri);
-		} catch (err) {
-			if (err instanceof vscode.FileSystemError) {
-				devfileExist = false;
-			} else {
-				log(`>> ERROR ${err}`);
+	async onDidDevfileUpdate(): Promise<boolean> {
+		if (this.service.getUpdateStrategy() === devfile.DevfileUpdateStrategy.Silent) {
+			try {
+				await this.service.saveToFileSystem();
+				return true;
+			} catch (err) {
+				log(`ERROR occured: ${err.message}`);
 			}
 		}
-
-		log('');
-		log(`> devfile exist ${devfileExist}`);
-
-		if (devfileExist) {
-			const answer = await vscode.window.showWarningMessage('Devfile already exists', 'Override', 'Skip');
-			log(`> answer ${answer}`);
-
-			if ('Override' === answer) {
-				await vscode.workspace.fs.writeFile(devfileUri, Buffer.from(content, 'utf8'));
-			} else {
-				return false;
-			}
-
-		} else {
-			await vscode.workspace.fs.writeFile(devfileUri, Buffer.from(content, 'utf8'));
-		}
-
-		return true;
+		return false;
 	}
 
-	private async openDevfile(): Promise<void> {
-		if (!vscode.workspace.workspaceFolders ||
-			vscode.workspace.workspaceFolders.length === 0) {
-			await vscode.window.showInformationMessage('The first you need to open a project');
-			return;
+	private async silentUpdate(): Promise<boolean> {
+		try {
+			await this.service.saveToFileSystem();
+			await this.performPostSaveActions();
+			return true;
+		
+		} catch (err) {
+            log(`ERROR occured: ${err.message}`);
 		}
 
-		const folderUri = vscode.workspace.workspaceFolders[0].uri;
-		const devfileUri = folderUri.with({ path: posix.join(folderUri.path, 'devfile.yaml') });
+		return false;
+	}
+
+	private async confirmUpdate(): Promise<boolean> {
+		try {
+			const answer = await vscode.window.showWarningMessage('Devfile already exists', 'Update', 'Cancel');
+			log(`> answer ${answer}`);
+
+			if ('Update' === answer) {
+				await this.service.saveToFileSystem();
+				await this.performPostSaveActions();
+				return true;
+			}
+
+		} catch (err) {
+			log(`ERROR occured: ${err.message}`);
+		}
+
+		return false;
+	}
+
+	private async confirmOverwrite(): Promise<boolean> {
+		try {
+			const answer = await vscode.window.showWarningMessage('Devfile already exists', 'Overwrite', 'Cancel');
+			log(`> answer ${answer}`);
+
+			if ('Overwrite' === answer) {
+				await this.service.saveToFileSystem();
+				await this.performPostSaveActions();
+				return true;
+			}
+
+		} catch (err) {
+			log(`ERROR occured: ${err.message}`);
+		}
+
+		return false;
+	}
+
+	private async performPostSaveActions(): Promise<void> {
+		const devfileUri = this.service.getDevfileURI();
 		vscode.window.showTextDocument(devfileUri);
 	}
 

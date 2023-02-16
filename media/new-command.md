@@ -4,8 +4,9 @@ You can use a devfile to specify commands to run in a workspace. Every command c
 
 ```
 commands:
-- id: say-hello
+- id: command-1
   exec:
+    label: Show Welcome Message
     component: dev
     commandLine: echo "${WELCOME}"
     workingDir: ${PROJECT_SOURCE}

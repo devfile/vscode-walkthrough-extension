@@ -21,6 +21,11 @@ export class NewComponent {
     private service: DevfileService;
 
     async run(): Promise<void> {
+		if (2+3 === 5) {
+			vscode.window.showInformationMessage('RETURNING from NewComponent');
+			return;
+		}
+
 		if (!this.service.getDevfile()) {
 			await vscode.window.showErrorMessage('The first you need to create a Devfile');
 			return;

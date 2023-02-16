@@ -13,104 +13,142 @@ import * as vscode from 'vscode';
 import { log } from "../logger";
 import * as devfile from "../devfile";
 import { DevfileService } from "../devfile/devfile-service";
+import { NewCommand, NewContainer, SaveDevfile } from "../model/extension-model";
+import { countContainerComponents } from "./util";
 
 @injectable()
-export class NewCommand {
+export class NewCommandImpl implements NewCommand {
 
 	@inject(DevfileService)
     private service: DevfileService;
 
-    async run(): Promise<void> {
-		// the Devfile object should be already created
-		if (!this.service.getDevfile()) {
-			await vscode.window.showErrorMessage('The first you need to create a Devfile');
-			return;
-		}
+	@inject(NewContainer)
+	private newContainer: NewContainer;
 
-		// user has alreadt created at least one container component
-		let containerComponents = 0;
-		for (const c of this.service.getDevfile().components) {
-			if (c.container) {
-				containerComponents++;
+	@inject(SaveDevfile)
+	private saveDevfile: SaveDevfile;
+
+	private commandCounter = 0;
+
+
+    async run(): Promise<boolean> {
+		log('NewCommandImpl::run()');
+
+		try {
+			if (!await this.newContainer.ensureAtLeastOneContainerExist()) {
+				log('NewCommandImpl >> container is not created');
+				return;
 			}
-		}
 
-		if (containerComponents === 0) {
-			await vscode.window.showErrorMessage('The first you need to create a component');
-			true;
-		}
+			const containerComponents = countContainerComponents(this.service.getDevfile());
+			if (containerComponents === 0) {
+				await vscode.window.showErrorMessage('Something went wrong!');
+				return false;
+			}
 
-		let askForCommand = false;
-
-		while (await this.wantToAddCommand(askForCommand)) {
-			askForCommand = true;
-
-			log('>> add command');
+			log('>> adding a command...');
 			const command = await this.defineCommand();
 			if (command) {
+				if (!this.service.getDevfile().commands) {
+					this.service.getDevfile().commands = [];
+				}
+
 				this.service.getDevfile().commands.push(command);
-			} else {
-				log('<< canceled');
-				break;
+				
+				await this.saveDevfile.onDidDevfileUpdate();
+				vscode.window.showInformationMessage(`Command '${command.id}' has been created successfully`, 'Open Devfile');
+				return true;
 			}
-		}
+
+			log('<< canceled');
+
+        } catch (err) {
+            log(`ERROR occured: ${err.message}`);
+        }
+
+		return false;
     }
 
-	private async wantToAddCommand(askForCommand: boolean): Promise<boolean> {
-		if (!askForCommand) {
-			return true;
+	private async defineCommand(): Promise<devfile.Command | undefined> {
+		log('NewCommandImpl::defineCommand()');
+
+		const label = await this.enterLabel();
+		log(`>> label ${label}`);
+		if (!label) {
+			return undefined;
 		}
 
-		// if the Devfile has no command defined, we assume the user wants to add at least one
-		log(`>>> commands: ${this.service.getDevfile().commands.length}`);
-		if (this.service.getDevfile().commands.length === 0) {
-			return true;
+		const component = await this.selectComponent();
+		log(`>> component ${component}`);
+		if (!component) {
+			return undefined;
 		}
 
-		const answer = await vscode.window.showQuickPick([
-			'Yes', 'No'
-		], {
-			title: 'Would you like to add one more command?',
-		});
+		const commandLine = await this.enterCommandLine();
+		log(`>> command line ${commandLine}`);
+		if (!commandLine) {
+			return undefined;
+		}
 
-		return 'Yes' === answer;
+		// form command ID
+		let commandID;
+		do {
+			this.commandCounter++;
+			commandID = `command-${this.commandCounter}`;
+		} while (this.isCommandExist(commandID));
+
+		return {
+			id: commandID,
+			exec: {
+				label,
+				component,
+				commandLine,
+				workingDir: '${PROJECT_SOURCE}'
+			}
+		};
 	}
 
-	private async defineCommand(): Promise<devfile.Command | undefined> {
-		const commands = this.service.getDevfile().commands;
-
-		const id = await vscode.window.showInputBox({
-			value: 'say-hello',
-			title: 'Command Identifier',
+	/**
+	 * Asks user for the command label
+	 */
+	private async enterLabel(): Promise<string> {
+		return await vscode.window.showInputBox({
+			value: 'Sample Command',
+			title: 'Add Command Label',
 
 			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
 				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
 
 				if (!value) {
 					return {
-						message: 'Command identifier cannot be empty',
+						message: 'Command label cannot be empty',
 						severity: vscode.InputBoxValidationSeverity.Error
 					} as vscode.InputBoxValidationMessage;
 				}
 
-				for (const c of commands) {
-					if (c.id === value) {
-						return {
-							message: 'A command with this identifier alredy exists',
-							severity: vscode.InputBoxValidationSeverity.Error
-						} as vscode.InputBoxValidationMessage;
+				const commands = this.service.getDevfile().commands;
+				if (commands) {
+					for (const c of commands) {
+						if (c.exec.label && c.exec.label === value) {
+							return {
+								message: 'A command with this label alredy exists',
+								severity: vscode.InputBoxValidationSeverity.Error
+							} as vscode.InputBoxValidationMessage;
+						}
 					}
+
 				}
 
 				return undefined;
 			}
 
 		});
+	}
 
-		if (!id) {
-			return undefined;
-		}
-
+	/**
+	 * Asks user for the command component to run
+	 */
+	private async selectComponent(): Promise<string> {
 		const componentNames: string[] = [];
 		for (const c of this.service.getDevfile().components) {
 			// take only container component
@@ -119,15 +157,16 @@ export class NewCommand {
 			}
 		}
 
-		const component = await vscode.window.showQuickPick(componentNames, {
+		return await vscode.window.showQuickPick(componentNames, {
 			title: 'Select a component in which the command will be executed',
 		});
+	}
 
-		if (!component) {
-			return undefined;
-		}
-
-		const commandLine = await vscode.window.showInputBox({
+	/**
+	 * Asks user to enter command line
+	 */
+	private async enterCommandLine(): Promise<string> {
+		return await vscode.window.showInputBox({
 			value: 'echo "${WELCOME}"',
 			title: 'Enter command line to be executed',
 
@@ -145,39 +184,21 @@ export class NewCommand {
 			}
 
 		});
+	}
 
-		if (!commandLine) {
-			return undefined;
+	private isCommandExist(id: string): boolean {
+		const devfile = this.service.getDevfile();
+		if (!devfile.commands) {
+			return false;
 		}
 
-		const workingDir = await vscode.window.showInputBox({
-			value: '${PROJECT_SOURCE}',
-			title: 'Enter the working directory for your commnd',
-
-			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-				Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-
-				if (!value) {
-					return {
-						message: 'Working directory cannot be empty',
-						severity: vscode.InputBoxValidationSeverity.Error
-					} as vscode.InputBoxValidationMessage;
-				}
-
-				return undefined;
+		for (const command of devfile.commands) {
+			if (command.id === id) {
+				return true;
 			}
-		});
-
-		if (!workingDir) {
-			return undefined;
 		}
 
-		return {
-			id,
-			component,
-			commandLine,
-			workingDir
-		};
+		return false;
 	}
 
 }

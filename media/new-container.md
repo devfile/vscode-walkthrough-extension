@@ -11,14 +11,4 @@ components:
         memoryLimit: 2048Mi
         cpuRequest: 0.1
         cpuLimit: 0.5
-        mountSources: true ???
-        endpoints:
-          - exposure: public
-            name: http-demo
-            protocol: http
-            targetPort: 8080
-        env:
-          - name: WELCOME
-            value: "Hello World"
-
 ```
