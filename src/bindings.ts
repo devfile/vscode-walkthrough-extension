@@ -10,7 +10,6 @@
 
 import { Container } from 'inversify';
 import { NewCommandImpl } from './command/new-command';
-import { NewComponent } from './command/new-component-deprecated';
 import { NewContainerImpl } from './command/new-container';
 import { SaveDevfileImpl } from './command/save-devfile';
 import { DevfileExtensionImpl } from './devfile-extension';
@@ -26,7 +25,6 @@ export function initBindings(): Container {
     container.bind(DevfileExtension).toService(DevfileExtensionImpl);
 
     container.bind(DevfileService).toSelf().inSingletonScope();
-    container.bind(NewComponent).toSelf().inSingletonScope();
     
     container.bind(NewCommandImpl).toSelf().inSingletonScope();
     container.bind(NewCommand).toService(NewCommandImpl);
