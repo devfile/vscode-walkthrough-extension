@@ -15,9 +15,9 @@ import { NewContainerImpl } from './command/new-container';
 import { SaveDevfileImpl } from './command/save-devfile';
 import { DevfileExtensionImpl } from './devfile-extension';
 import { DevfileService } from './devfile/devfile-service';
-import { DevfileExtension, NewCommand, NewContainer, NewEndpoint, SaveDevfile } from './model/extension-model';
-import { NewEnvironmentVariable } from './command/new-environment-variable';
+import { DevfileExtension, NewCommand, NewContainer, NewEndpoint, NewEnvironmentVariable, SaveDevfile } from './model/extension-model';
 import { NewEndpointImpl } from './command/new-endpoint';
+import { NewEnvironmentVariableImpl } from './command/new-environment-variable';
 
 export function initBindings(): Container {
     const container = new Container();
@@ -40,7 +40,8 @@ export function initBindings(): Container {
     container.bind(NewEndpointImpl).toSelf().inSingletonScope();
     container.bind(NewEndpoint).toService(NewEndpointImpl);
 
-    container.bind(NewEnvironmentVariable).toSelf().inSingletonScope();
+    container.bind(NewEnvironmentVariableImpl).toSelf().inSingletonScope();
+    container.bind(NewEnvironmentVariable).toService(NewEnvironmentVariableImpl);
 
     return container;
 }

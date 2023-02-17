@@ -12,11 +12,10 @@ import 'reflect-metadata';
 
 import * as vscode from 'vscode';
 import { log } from './logger';
-import { DevfileExtension, NewCommand, NewContainer, NewEndpoint, SaveDevfile } from './model/extension-model';
+import { DevfileExtension, NewCommand, NewContainer, NewEndpoint, NewEnvironmentVariable, SaveDevfile } from './model/extension-model';
 import { inject, injectable } from 'inversify';
 import { initBindings } from './bindings';
 import { DevfileService } from './devfile/devfile-service';
-import { NewEnvironmentVariable } from './command/new-environment-variable';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 

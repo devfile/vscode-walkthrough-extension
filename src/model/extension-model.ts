@@ -20,6 +20,9 @@ export interface NewContainer {
      */
     run(): Promise<boolean>;
 
+    /**
+     * If the devfile does not have a component container, proposes the user to create it
+     */
     ensureAtLeastOneContainerExist(): Promise<boolean>;
 }
 
@@ -27,6 +30,14 @@ export const NewEndpoint = Symbol('NewEndpoint');
 export interface NewEndpoint {
     /**
      * Returns true if an endpoint was created successfully
+     */
+    run(): Promise<boolean>;
+}
+
+export const NewEnvironmentVariable = Symbol('NewEnvironmentVariable');
+export interface NewEnvironmentVariable {
+    /**
+     * Returns true if the environment variable was created successfully
      */
     run(): Promise<boolean>;
 }

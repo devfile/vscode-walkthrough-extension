@@ -39,11 +39,11 @@ export class NewCommandImpl implements NewCommand {
 				return;
 			}
 
-			const containerComponents = countContainerComponents(this.service.getDevfile());
-			if (containerComponents === 0) {
-				await vscode.window.showErrorMessage('Something went wrong!');
-				return false;
-			}
+			// const containerComponents = countContainerComponents(this.service.getDevfile());
+			// if (containerComponents === 0) {
+			// 	await vscode.window.showErrorMessage('Something went wrong!');
+			// 	return false;
+			// }
 
 			log('>> adding a command...');
 			const command = await this.defineCommand();

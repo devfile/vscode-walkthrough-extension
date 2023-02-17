@@ -37,11 +37,11 @@ export class NewEndpointImpl implements NewEndpoint {
 				return;
 			}
 
-			const containerComponents = countContainerComponents(this.service.getDevfile());
-			if (containerComponents === 0) {
-				await vscode.window.showErrorMessage('Something went wrong!');
-				return false;
-			}
+			// const containerComponents = countContainerComponents(this.service.getDevfile());
+			// if (containerComponents === 0) {
+			// 	await vscode.window.showErrorMessage('Something went wrong!');
+			// 	return false;
+			// }
 
 			log('>> adding an endpoint...');
 
@@ -69,8 +69,8 @@ export class NewEndpointImpl implements NewEndpoint {
     private async defineEndpoint(): Promise<devfile.Endpoint | undefined> {
         log('');
         log('>> defineEndpoint ....');
-        // select component container
 
+        // select component container
         const component = await this.selectComponent();
         if (!component) {
 			return undefined;
@@ -132,7 +132,7 @@ export class NewEndpointImpl implements NewEndpoint {
             .map<string>(c => c.name);
 
 		const componentName = await vscode.window.showQuickPick(componentNames, {
-			title: 'Select a component in which the command will be executed',
+			title: 'Select a component container',
 		});
 
         return this.service.getDevfile().components
