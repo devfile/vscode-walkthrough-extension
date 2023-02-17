@@ -15,12 +15,14 @@ export function countContainerComponents(devfile: devfile.Devfile): number {
         return 0;
     }
 
-    let containerComponents = 0;
-    for (const c of devfile.components) {
-        if (c.container) {
-            containerComponents++;
-        }
-    }
+    return devfile.components.filter(c => c.container).length;
 
-    return containerComponents;
+    // let containerComponents = 0;
+    // for (const c of devfile.components) {
+    //     if (c.container) {
+    //         containerComponents++;
+    //     }
+    // }
+
+    // return containerComponents;
 }

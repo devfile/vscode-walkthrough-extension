@@ -4,8 +4,7 @@ This section describes how to define endpoints and specify their properties.
 
 ```
 endpoints:
-  - exposure: public
-    name: http-demo
-    protocol: http << should work without defining this one
+  - name: tomcat
     targetPort: 8080
+    exposure: public
 ```

@@ -80,11 +80,8 @@ export class DevfileService {
                 await this.readFromFileSystem();
                 if (this.isDevfileValid()) {
                     this.updateStrategy = devfile.DevfileUpdateStrategy.Silent;
-                    log('> devfile is already exist. DevfileUpdateStrategy :: ConfirmUpdate');
                 } else {
                     this.updateStrategy = devfile.DevfileUpdateStrategy.Forbidden;
-                    log('> devfile is already exist. DevfileUpdateStrategy :: Forbidden');
-
                     vscode.window.showErrorMessage('Devfile at the root of your project has invalid format');
                     this.showStatusBarItem();
                 }
@@ -207,8 +204,6 @@ export class DevfileService {
 
     private async readFromFileSystem(): Promise<void> {
         const devfileUri = this.getDevfileURI();
-        log(`> found devfile: ${devfileUri.path}`);
-
         const readData = await vscode.workspace.fs.readFile(devfileUri);
         const readStr = Buffer.from(readData).toString('utf8');
         this.devfile = safeLoad(readStr) as devfile.Devfile;

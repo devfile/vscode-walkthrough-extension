@@ -97,6 +97,10 @@ export class NewContainerImpl implements NewContainer {
         return false;
     }
 
+    /**
+     * <= 63 characters
+     * See https://devfile.io/docs/2.2.0/devfile-schema#components
+     */
 	private async defineComponentName(): Promise<string | undefined> {
         log('NewContainerImpl::defineComponentName()');
 

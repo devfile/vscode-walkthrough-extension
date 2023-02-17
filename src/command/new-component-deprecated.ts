@@ -78,29 +78,29 @@ export class NewComponent {
 			log('<< canceled');
 		}
 
-		// define endpoints
-		while (await this.wantToDefineEndpoint(container.endpoints)) {
-			log('> expose port...');
+		// // define endpoints
+		// while (await this.wantToDefineEndpoint(container.endpoints)) {
+		// 	log('> expose port...');
 
-			const endpoint = await this.defineEndpoint(container.endpoints);
-			if (endpoint) {
-				if (!container.endpoints) {
-					container.endpoints = [];
-				}
+		// 	const endpoint = await this.defineEndpoint(container.endpoints);
+		// 	if (endpoint) {
+		// 		if (!container.endpoints) {
+		// 			container.endpoints = [];
+		// 		}
 	
-				container.endpoints.push(endpoint);
-			} else {
-				log('<< canceled');
-				break;
-			}
-		}
+		// 		container.endpoints.push(endpoint);
+		// 	} else {
+		// 		log('<< canceled');
+		// 		break;
+		// 	}
+		// }
 
-		if (container.endpoints) {
-			log(`> Endpoints: ${container.endpoints.length}`);
-			for (const port of container.endpoints) {
-				log(`    [ Visibility: ${port.visibility}; Name: ${port.name}; Protocol: ${port.protocol}; Port: ${port.port}; ]`);
-			}
-		}
+		// if (container.endpoints) {
+		// 	log(`> Endpoints: ${container.endpoints.length}`);
+		// 	for (const port of container.endpoints) {
+		// 		log(`    [ Visibility: ${port.visibility}; Name: ${port.name}; Protocol: ${port.protocol}; Port: ${port.port}; ]`);
+		// 	}
+		// }
 
 		// define environment variables
 		while (await this.wantToDefineEnvironmentVariable(container.env)) {
@@ -246,127 +246,127 @@ export class NewComponent {
 		return 'Yes' === exposePort;
 	}
 
-	private async defineEndpoint(endpoints: devfile.Endpoint[] | undefined): Promise<devfile.Endpoint | undefined> {
-		const exposedPorts = endpoints;
+	// private async defineEndpoint(endpoints: devfile.Endpoint[] | undefined): Promise<devfile.Endpoint | undefined> {
+	// 	const exposedPorts = endpoints;
 
-		const visibility = await vscode.window.showQuickPick([
-			'public', 'internal'
-		], {
-			title: 'Endpoint Visibility'
-		});
+	// 	const visibility = await vscode.window.showQuickPick([
+	// 		'public', 'internal'
+	// 	], {
+	// 		title: 'Endpoint Visibility'
+	// 	});
 
-		log(`Visibility: ${visibility}`);
+	// 	log(`Visibility: ${visibility}`);
 
-		if (!visibility) {
-			return undefined;
-		}
+	// 	if (!visibility) {
+	// 		return undefined;
+	// 	}
 
-		const name = await vscode.window.showInputBox({
-			value: exposedPorts && exposedPorts.length !== 0 ? '' : 'http-demo',
-			title: 'Endpoint Name',
+	// 	const name = await vscode.window.showInputBox({
+	// 		value: exposedPorts && exposedPorts.length !== 0 ? '' : 'http-demo',
+	// 		title: 'Endpoint Name',
 
-			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-				if (!value) {
-					return {
-						message: 'Endpoint name cannot be empty',
-						severity: vscode.InputBoxValidationSeverity.Error
-					} as vscode.InputBoxValidationMessage;
-				}
+	// 		validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+	// 		Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+	// 			if (!value) {
+	// 				return {
+	// 					message: 'Endpoint name cannot be empty',
+	// 					severity: vscode.InputBoxValidationSeverity.Error
+	// 				} as vscode.InputBoxValidationMessage;
+	// 			}
 			
-				if (exposedPorts) {
-					for (const p of exposedPorts) {
-						if (p.name === value) {
-							return {
-								message: 'Endpoint with this name already exists',
-								severity: vscode.InputBoxValidationSeverity.Error
-							} as vscode.InputBoxValidationMessage;
-						}
-					}
-				}
+	// 			if (exposedPorts) {
+	// 				for (const p of exposedPorts) {
+	// 					if (p.name === value) {
+	// 						return {
+	// 							message: 'Endpoint with this name already exists',
+	// 							severity: vscode.InputBoxValidationSeverity.Error
+	// 						} as vscode.InputBoxValidationMessage;
+	// 					}
+	// 				}
+	// 			}
 
-				return undefined;
-			}
-		});
+	// 			return undefined;
+	// 		}
+	// 	});
 
-		if (!name) {
-			return undefined;
-		}
+	// 	if (!name) {
+	// 		return undefined;
+	// 	}
 
-		const port = await vscode.window.showInputBox({
-			value: exposedPorts && exposedPorts.length !== 0 ? '' : '8080',
-			title: 'Target Port',
+	// 	const port = await vscode.window.showInputBox({
+	// 		value: exposedPorts && exposedPorts.length !== 0 ? '' : '8080',
+	// 		title: 'Target Port',
 
-			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-				if (!value) {
-					return {
-						message: 'Target port cannot be empty',
-						severity: vscode.InputBoxValidationSeverity.Error
-					} as vscode.InputBoxValidationMessage;
-				}
+	// 		validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+	// 		Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+	// 			if (!value) {
+	// 				return {
+	// 					message: 'Target port cannot be empty',
+	// 					severity: vscode.InputBoxValidationSeverity.Error
+	// 				} as vscode.InputBoxValidationMessage;
+	// 			}
 
-				const pValue: number = Number.parseInt(value);
-				if (!Number.isInteger(pValue)) {
-					return {
-						message: 'Only Integer is allowed',
-						severity: vscode.InputBoxValidationSeverity.Error
-					} as vscode.InputBoxValidationMessage;
-				}
+	// 			const pValue: number = Number.parseInt(value);
+	// 			if (!Number.isInteger(pValue)) {
+	// 				return {
+	// 					message: 'Only Integer is allowed',
+	// 					severity: vscode.InputBoxValidationSeverity.Error
+	// 				} as vscode.InputBoxValidationMessage;
+	// 			}
 
-				if (exposedPorts) {
-					for (const p of exposedPorts) {
-						if (p.port === pValue) {
-							return {
-								message: 'Endpoint with this port already exists',
-								severity: vscode.InputBoxValidationSeverity.Error
-							} as vscode.InputBoxValidationMessage;
-						}
-					}
-				}
+	// 			if (exposedPorts) {
+	// 				for (const p of exposedPorts) {
+	// 					if (p.port === pValue) {
+	// 						return {
+	// 							message: 'Endpoint with this port already exists',
+	// 							severity: vscode.InputBoxValidationSeverity.Error
+	// 						} as vscode.InputBoxValidationMessage;
+	// 					}
+	// 				}
+	// 			}
 
-				return undefined;
-			}
-		});
+	// 			return undefined;
+	// 		}
+	// 	});
 
-		if (!port) {
-			return undefined;
-		}
+	// 	if (!port) {
+	// 		return undefined;
+	// 	}
 
-		const portValue: number = Number.parseInt(port);
+	// 	const portValue: number = Number.parseInt(port);
 
-		log(`Port value: ${portValue}`);
-		log(`Number.isInteger(portValue): ${Number.isInteger(portValue)}`);
+	// 	log(`Port value: ${portValue}`);
+	// 	log(`Number.isInteger(portValue): ${Number.isInteger(portValue)}`);
 
-		const protocol = await vscode.window.showInputBox({
-			value: 'http',
-			title: 'Protocol',
+	// 	const protocol = await vscode.window.showInputBox({
+	// 		value: 'http',
+	// 		title: 'Protocol',
 
-			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-				if (!value) {
-					return {
-						message: 'Empty value is not allowed',
-						severity: vscode.InputBoxValidationSeverity.Error
-					} as vscode.InputBoxValidationMessage;
-				}
+	// 		validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+	// 		Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+	// 			if (!value) {
+	// 				return {
+	// 					message: 'Empty value is not allowed',
+	// 					severity: vscode.InputBoxValidationSeverity.Error
+	// 				} as vscode.InputBoxValidationMessage;
+	// 			}
 
-				return undefined;
-			}
+	// 			return undefined;
+	// 		}
 
-		});
+	// 	});
 
-		if (!protocol) {
-			return undefined;
-		}
+	// 	if (!protocol) {
+	// 		return undefined;
+	// 	}
 
-		return {
-			visibility: visibility === 'public' ? 'public' : 'internal',
-			name: name,
-			port: portValue,
-			protocol: protocol
-		};
-	}
+	// 	return {
+	// 		visibility: visibility === 'public' ? 'public' : 'internal',
+	// 		name: name,
+	// 		port: portValue,
+	// 		protocol: protocol
+	// 	};
+	// }
 
 	private async wantToDefineEnvironmentVariable(env: devfile.EnvironmentVariable[] | undefined): Promise<boolean> {
 		const defineVariable = await vscode.window.showQuickPick([

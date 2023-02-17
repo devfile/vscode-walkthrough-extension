@@ -36,10 +36,9 @@ export interface ComponentContainer {
 }
 
 export interface Endpoint {
-	visibility: 'public' | 'internal';
 	name: string;
-	protocol: string;
-	port: number;
+	targetPort: number;
+	exposure?: 'public' | 'internal' | 'none';
 }
 
 export interface EnvironmentVariable {

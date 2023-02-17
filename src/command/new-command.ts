@@ -28,8 +28,7 @@ export class NewCommandImpl implements NewCommand {
 	@inject(SaveDevfile)
 	private saveDevfile: SaveDevfile;
 
-	private commandCounter = 0;
-
+	private idCounter = 0;
 
     async run(): Promise<boolean> {
 		log('NewCommandImpl::run()');
@@ -93,8 +92,8 @@ export class NewCommandImpl implements NewCommand {
 		// form command ID
 		let commandID;
 		do {
-			this.commandCounter++;
-			commandID = `command-${this.commandCounter}`;
+			this.idCounter++;
+			commandID = `command-${this.idCounter}`;
 		} while (this.isCommandExist(commandID));
 
 		return {
@@ -146,7 +145,7 @@ export class NewCommandImpl implements NewCommand {
 	}
 
 	/**
-	 * Asks user for the command component to run
+	 * Asks user for the component to run
 	 */
 	private async selectComponent(): Promise<string> {
 		const componentNames: string[] = [];
