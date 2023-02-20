@@ -12,7 +12,6 @@ import { inject, injectable } from "inversify";
 import { log } from "../logger";
 import { DevfileService } from "../devfile/devfile-service";
 import { NewContainer, NewEndpoint, SaveDevfile } from "../model/extension-model";
-import { countContainerComponents } from "./util";
 import * as vscode from 'vscode';
 import * as devfile from "../devfile";
 
@@ -67,44 +66,29 @@ export class NewEndpointImpl implements NewEndpoint {
 
         log(`> component ${component.name}`);
 
-        // enter name
-        const name = await this.enterEndpointName(component);
-        log(`> name ${name}`);
-        if (!name) {
-            return undefined;
-        }
-
         // enter port
-        const targetPort = await this.enterTargetPort(component);
-        log(`> port ${targetPort}`);
-        if (!targetPort) {
+        const exposedPort = await this.enterExposedPort(component);
+        log(`> port ${exposedPort}`);
+        if (!exposedPort) {
             return undefined;
         }
 
         // enter exposure
         const exposure = await this.enterExposure();
         log(`> exposure ${exposure}`);
-
-        const endpoint: devfile.Endpoint = {
-            name,
-            targetPort
-        };
-
-        switch (exposure) {
-            case 'public':
-                endpoint.exposure = 'public';
-                break;
-            case 'internal':
-                endpoint.exposure = 'internal';
-                break;
-            case 'none':
-                endpoint.exposure = 'none';
-                break;
+        if (!exposure) {
+            return undefined;
         }
 
         if (!component.container.endpoints) {
             component.container.endpoints = [];
         }
+
+        const endpoint: devfile.Endpoint = {
+            name: exposedPort.toString(),
+            targetPort: exposedPort,
+            exposure
+        };
 
         component.container.endpoints.push(endpoint);
 
@@ -145,56 +129,16 @@ export class NewEndpointImpl implements NewEndpoint {
         }
     }
 
-    /**
-     * Ask user to enter endpoint name
-     * Maximum 15 characters allowed
-     */
-    private async enterEndpointName(component: devfile.Component): Promise<string | undefined> {
-		return await vscode.window.showInputBox({
-			value: 'http-server',
-			title: 'Endpoint Name',
-
-			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-				if (!value) {
-					return {
-						message: 'Endpoint name cannot be empty',
-						severity: vscode.InputBoxValidationSeverity.Error
-					} as vscode.InputBoxValidationMessage;
-				}
-
-                if (component.container && component.container.endpoints) {
-                    if (component.container.endpoints.find(e => e.name === value)) {
-                        return {
-                            message: 'Endpoint with this name already exists',
-                            severity: vscode.InputBoxValidationSeverity.Error
-                        } as vscode.InputBoxValidationMessage;
-                    }
-                }
-                
-                // check length <= 15 characters
-                if (value.length > 15) {
-                    return {
-                        message: 'Exceeded maximum length of 15 characters',
-                        severity: vscode.InputBoxValidationSeverity.Error
-                    } as vscode.InputBoxValidationMessage;
-                }
-
-				return undefined;
-			}
-		});
-    }
-
-    private async enterTargetPort(component: devfile.Component): Promise<number | undefined> {
+    private async enterExposedPort(component: devfile.Component): Promise<number | undefined> {
         const port = await vscode.window.showInputBox({
 			value: '8080',
-			title: 'Target Port',
+			title: 'Exposed Port',
 
 			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
 			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
 				if (!value) {
 					return {
-						message: 'Target port cannot be empty',
+						message: 'Exposed port cannot be empty',
 						severity: vscode.InputBoxValidationSeverity.Error
 					} as vscode.InputBoxValidationMessage;
 				}
@@ -210,7 +154,7 @@ export class NewEndpointImpl implements NewEndpoint {
                 if (component.container && component.container.endpoints) {
                     if (component.container.endpoints.find(e => e.targetPort === pValue)) {
                         return {
-                            message: 'Endpoint with this port already exists',
+                            message: 'This port is already exposed',
                             severity: vscode.InputBoxValidationSeverity.Error
                         } as vscode.InputBoxValidationMessage;
                     }
@@ -223,12 +167,42 @@ export class NewEndpointImpl implements NewEndpoint {
         return Number.parseInt(port);
     }
 
-    private async enterExposure(): Promise<string | undefined> {
-        return await vscode.window.showQuickPick([
-			'public', 'internal', 'none'
-		], {
-			title: 'Endpoint Visibility (can be omitted)'
+    private async enterExposure(): Promise<'public' | 'internal' | 'none' | undefined> {
+        const dPublic = 'Endpoint will be exposed on the public network';
+        const dInternal = 'Endpoint will be exposed internally outside of the main devworkspace POD';
+        const dNone = 'Endpoint will not be exposed and will only be accessible inside the main devworkspace POD';
+
+        const items: vscode.QuickPickItem[] = [
+            {
+                label: 'public',
+                detail: dPublic
+            },
+            {
+                label: 'internal',
+                detail: dInternal
+            },
+            {
+                label: 'none',
+                detail: dNone
+            }
+        ];
+
+        const item = await vscode.window.showQuickPick(items, {
+			title: 'Describe how the port should be exposed on the network'
 		});
+
+        if (item) {
+            switch (item.label) {
+                case 'public':
+                    return 'public';
+                case 'internal':
+                    return 'internal';
+                case 'none':
+                    return 'none';
+            }
+        }
+
+        return undefined;
     }
 
 }

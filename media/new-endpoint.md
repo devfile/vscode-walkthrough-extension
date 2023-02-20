@@ -4,7 +4,7 @@ This section describes how to define endpoints and specify their properties.
 
 ```
 endpoints:
-  - name: tomcat
+  - name: '8080'
     targetPort: 8080
     exposure: public
 ```

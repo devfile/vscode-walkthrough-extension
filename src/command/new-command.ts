@@ -107,6 +107,7 @@ export class NewCommandImpl implements NewCommand {
         return await vscode.window.showInputBox({
             value: 'Sample Command',
             title: 'Add Command Label',
+            prompt: 'This label will be visible in the VS Code tasks view',
 
             validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
                 Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
