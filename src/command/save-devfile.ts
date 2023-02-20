@@ -21,7 +21,30 @@ export class SaveDevfileImpl implements SaveDevfile {
 	@inject(DevfileService)
 	private service: DevfileService;
 
-    async run(): Promise<boolean> {
+
+	async onDidDevfileUpdate(message?: string): Promise<void> {
+		if (this.service.getUpdateStrategy() === devfile.DevfileUpdateStrategy.Silent) {
+			try {
+				await this.service.saveToFileSystem();
+
+				if (message) {
+					vscode.window.showInformationMessage(message, 'Open Devfile').then(async answer => {
+						if ('Open Devfile' === answer) {
+							const devfileURI = this.service.getDevfileURI();
+							vscode.window.showTextDocument(devfileURI);
+						}
+					});
+				}
+
+			} catch (err) {
+				log(`ERROR occured: ${err.message}`);
+			}
+		}
+	}
+
+
+	
+	async run(): Promise<boolean> {
 		switch (this.service.getUpdateStrategy()) {
 			case devfile.DevfileUpdateStrategy.Forbidden:
 				await vscode.window.showErrorMessage('Unable to save the Devfile');
@@ -29,25 +52,13 @@ export class SaveDevfileImpl implements SaveDevfile {
 
 			case devfile.DevfileUpdateStrategy.Silent:
 				return await this.silentUpdate();
-			
+
 			case devfile.DevfileUpdateStrategy.ConfirmUpdate:
 				return await this.confirmUpdate();
 
 			case devfile.DevfileUpdateStrategy.ConfirmRewrite:
 				return await this.confirmOverwrite();
 		}
-    }
-
-	async onDidDevfileUpdate(): Promise<boolean> {
-		if (this.service.getUpdateStrategy() === devfile.DevfileUpdateStrategy.Silent) {
-			try {
-				await this.service.saveToFileSystem();
-				return true;
-			} catch (err) {
-				log(`ERROR occured: ${err.message}`);
-			}
-		}
-		return false;
 	}
 
 	private async silentUpdate(): Promise<boolean> {
@@ -55,9 +66,9 @@ export class SaveDevfileImpl implements SaveDevfile {
 			await this.service.saveToFileSystem();
 			await this.performPostSaveActions();
 			return true;
-		
+
 		} catch (err) {
-            log(`ERROR occured: ${err.message}`);
+			log(`ERROR occured: ${err.message}`);
 		}
 
 		return false;

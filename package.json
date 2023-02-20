@@ -58,7 +58,6 @@
 
   "contributes": {
     "commands": [
-
       {
         "command": "vscode-devfile.new-container",
         "title": "Devfile: New Container"
@@ -74,18 +73,13 @@
       {
         "command": "vscode-devfile.new-command",
         "title": "Devfile: New Command"
-      },
-
-      {
-        "command": "vscode-devfile.save-devfile",
-        "title": "Devfile: Save Devfile"
       }
     ],
 
     "walkthroughs": [
       {
-        "id": "create-devfile",
-        "title": "Create a Devfile",
+        "id": "get-started-with-devfile",
+        "title": "Get Started with Devfile",
         "description": "This wizard will help you create a Devfile with some components and commands",
         "icon": "media/default.png",
         "steps": [

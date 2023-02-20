@@ -36,23 +36,12 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
 				return;
 			}
 
-			// const containerComponents = countContainerComponents(this.service.getDevfile());
-			// if (containerComponents === 0) {
-			// 	await vscode.window.showErrorMessage('Something went wrong!');
-			// 	return false;
-			// }
-
 			log('>> adding an environment variable...');
 
             const environmentVariable = await this.defineEnvironmentVariable();
             if (environmentVariable) {
-                await this.saveDevfile.onDidDevfileUpdate().then(value => {
-                    log(`>>>> Devfile Updated: ${value}`);
-                });
-
-                vscode.window.showInformationMessage(`Environmane '${environmentVariable.name}' has been created successfully`, 'Open Devfile').then(value => {
-                    log('>>>> USER ANSWERED ' + value);
-                });
+                // update Devfile, show a popup with proposal to open the Devfile
+                await this.saveDevfile.onDidDevfileUpdate(`Environmane '${environmentVariable.name}' has been created successfully`);
                 return true;
             }
 
@@ -105,19 +94,36 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
     }
 
 	/**
-	 * Asks user to select a container for the endpoint
+	 * Asks user to select a container for the environment variable
 	 */
     private async selectComponent(): Promise<devfile.Component | undefined> {
         const componentNames: string[] = this.service.getDevfile().components
             .filter(c => c.container)
             .map<string>(c => c.name);
 
-		const componentName = await vscode.window.showQuickPick(componentNames, {
-			title: 'Select a component container',
+        if (componentNames.length === 1) {
+            return this.service.getDevfile().components.find(c => c.name === componentNames[0]);
+        }
+
+        const items: vscode.QuickPickItem[] = this.service.getDevfile().components
+            .filter(c => c.container).map(c => {
+                log(`> item ${c.name}`);
+
+                return {
+                    label: c.name,
+                    detail: c.container.image,
+                } as vscode.QuickPickItem;
+            });
+
+		const item = await vscode.window.showQuickPick(items, {
+			title: 'Select a container to which the new environment variable will be added',
 		});
 
-        return this.service.getDevfile().components
-            .find(c => c.name === componentName);
+        if (item) {
+            return this.service.getDevfile().components.find(c => c.name === item.label);
+        } else {
+            return undefined;
+        }
     }
 
     /**

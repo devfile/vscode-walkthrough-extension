@@ -44,10 +44,6 @@ export class DevfileExtensionImpl implements DevfileExtension {
 	@inject(NewCommand)
 	private newCommand: NewCommand;
 
-
-	@inject(SaveDevfile)
-	private saveDevfile: SaveDevfile;
-
 	constructor() {}
 
 	public async start(context: vscode.ExtensionContext): Promise<void> {
@@ -56,8 +52,6 @@ export class DevfileExtensionImpl implements DevfileExtension {
 		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-endpoint', async () => this.newEndpoint.run()));
 		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-environment-variable', async () => this.newEnvironmentVariable.run()));
 		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-command', async () => this.newCommand.run()));
-
-		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.save-devfile', async () => this.saveDevfile.run()));
 	}
 
 }

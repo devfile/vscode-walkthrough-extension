@@ -14,7 +14,6 @@ import { log } from "../logger";
 import * as devfile from "../devfile";
 import { DevfileService } from "../devfile/devfile-service";
 import { NewCommand, NewContainer, SaveDevfile } from "../model/extension-model";
-import { countContainerComponents } from "./util";
 
 @injectable()
 export class NewCommandImpl implements NewCommand {
@@ -39,12 +38,6 @@ export class NewCommandImpl implements NewCommand {
                 return;
             }
 
-            // const containerComponents = countContainerComponents(this.service.getDevfile());
-            // if (containerComponents === 0) {
-            // 	await vscode.window.showErrorMessage('Something went wrong!');
-            // 	return false;
-            // }
-
             log('>> adding a command...');
             const command = await this.defineCommand();
             if (command) {
@@ -54,8 +47,8 @@ export class NewCommandImpl implements NewCommand {
 
                 this.service.getDevfile().commands.push(command);
 
-                await this.saveDevfile.onDidDevfileUpdate();
-                vscode.window.showInformationMessage(`Command '${command.id}' has been created successfully`, 'Open Devfile');
+                // update Devfile, show a popup with proposal to open the Devfile
+                await this.saveDevfile.onDidDevfileUpdate(`Command '${command.id}' has been created successfully`);
                 return true;
             }
 
@@ -147,18 +140,34 @@ export class NewCommandImpl implements NewCommand {
     /**
      * Asks user for the component to run
      */
-    private async selectComponent(): Promise<string> {
-        const componentNames: string[] = [];
-        for (const c of this.service.getDevfile().components) {
-            // take only container component
-            if (c.container) {
-                componentNames.push(c.name);
-            }
+    private async selectComponent(): Promise<string | undefined> {
+        const componentNames: string[] = this.service.getDevfile().components
+            .filter(c => c.container)
+            .map(c => c.name);
+        
+        if (componentNames.length === 1) {
+            return componentNames[0];
         }
 
-        return await vscode.window.showQuickPick(componentNames, {
-            title: 'Select a component in which the command will be executed',
+        const items: vscode.QuickPickItem[] = this.service.getDevfile().components
+            .filter(c => c.container).map(c => {
+                log(`> item ${c.name}`);
+
+                return {
+                    label: c.name,
+                    detail: c.container.image,
+                } as vscode.QuickPickItem;
+            });
+
+        const item = await vscode.window.showQuickPick(items, {
+            title: 'Select a container in which the command will be executed',
         });
+
+        if (item) {
+            return item.label;
+        } else {
+            return undefined;
+        }
     }
 
     /**

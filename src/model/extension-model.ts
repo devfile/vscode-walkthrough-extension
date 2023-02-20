@@ -52,10 +52,5 @@ export interface NewCommand {
 
 export const SaveDevfile = Symbol('SaveDevfile');
 export interface SaveDevfile {
-    /**
-     * Returns true if a command was created successfully
-     */
-    run(): Promise<boolean>;
-
-    onDidDevfileUpdate(): Promise<boolean>;
+    onDidDevfileUpdate(message?: string): Promise<void>;
 }

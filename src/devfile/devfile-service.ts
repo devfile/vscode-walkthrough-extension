@@ -216,6 +216,13 @@ export class DevfileService {
     }
 
     private isDevfileValid(): boolean {
+
+        // new check
+        if (this.devfile.schemaVersion) {
+            return true;
+        }
+
+        // old check
         if (!this.devfile.schemaVersion) {
             log('<< Devfile :: schemaVersion is not set');
             return false;

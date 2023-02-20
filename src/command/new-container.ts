@@ -26,19 +26,9 @@ export class NewContainerImpl implements NewContainer {
     private savedevfile: SaveDevfile;
 
     async run(): Promise<boolean> {
-        // this.service.readFromFileSystem();
         log('NewContainerImpl::run()');
 
         try {
-            // component name
-            const componentName = await this.defineComponentName();
-            if (!componentName) {
-                log('<< canceled');
-                return false;
-            }
-
-            log(`> component name: ${componentName}`);
-
             // container component image
             const containerImage = await this.defineComponentImage();
             if (!containerImage) {
@@ -48,47 +38,47 @@ export class NewContainerImpl implements NewContainer {
 
             log(`> container image: ${containerImage}`);
 
-            const container: devfile.ComponentContainer = {
-                image: containerImage,
-                mountSources: true
-            };
+
+            // component name
+            const componentName = await this.formGenericComponentName();
+            if (!componentName) {
+                log('<< canceled');
+                return false;
+            }
+
+            log(`> component name: ${componentName}`);
 
             // add new component
             if (!this.service.getDevfile().components) {
-                log('<<< added .components field');
                 this.service.getDevfile().components = [];
             }
 
-            this.service.getDevfile().components.push({
-                name: componentName,
-                container
-            });
-
-            // memory limit, can be omitted
-            const memoryLimit = await this.defineComponentMemoryLimit();
-            if (memoryLimit) {
-                log(`> memory limit: ${memoryLimit}`);
-                container.memoryLimit = memoryLimit;
+            if (countContainerComponents(this.service.getDevfile()) === 0) {
+                this.service.getDevfile().components.push({
+                    name: componentName,
+                    container: {
+                        image: containerImage,
+                        // set defaults
+                        mountSources: true,
+                        memoryRequest: '500Mi',
+                        memoryLimit: '6G',
+                        cpuRequest: '1000m',
+                        cpuLimit: '4000m'
+                    }
+                });
             } else {
-                log('<< canceled');
+                this.service.getDevfile().components.push({
+                    name: componentName,
+                    container: {
+                        image: containerImage,
+                        // set defaults
+                        mountSources: true
+                    }
+                });
             }
 
-            // CPU limit, can be omitted
-            const cpuLimit = await this.defineComponentCpuLimit();
-            if (cpuLimit) {
-                log(`> cpu limit: ${cpuLimit}`);
-                container.cpuLimit = cpuLimit;
-            } else {
-                log('<< canceled');
-            }
-
-            this.savedevfile.onDidDevfileUpdate().then(value => {
-                log(`>>>> Devfile Updated: ${value}`);
-            });
-
-            vscode.window.showInformationMessage(`Container '${componentName}' has been created successfully`, 'Open Devfile').then(value => {
-                log('>>>> USER ANSWERED ' + value);
-            });
+            // update Devfile, show a popup with proposal to open the Devfile
+            await this.savedevfile.onDidDevfileUpdate(`Container '${componentName}' has been created successfully`);
             return true;
         } catch (err) {
             log(`ERROR occured: ${err.message}`);
@@ -97,42 +87,23 @@ export class NewContainerImpl implements NewContainer {
         return false;
     }
 
-    /**
-     * <= 63 characters
-     * See https://devfile.io/docs/2.2.0/devfile-schema#components
-     */
-    private async defineComponentName(): Promise<string | undefined> {
-        log('NewContainerImpl::defineComponentName()');
+    private async formGenericComponentName(): Promise<string> {
+        const devfile = this.service.getDevfile();
 
-        const containerComponents = countContainerComponents(this.service.getDevfile());
+        let counter = 0;
+        let name;
+        do {
+            counter++;
+            name = `container-${counter}`;
 
-        return await vscode.window.showInputBox({
-            value: containerComponents === 0 ? 'dev' : '',
-            title: 'Container Component Name',
-
-            validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-                Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-
-                if (!value) {
-                    return {
-                        message: 'Container component name cannot be empty',
-                        severity: vscode.InputBoxValidationSeverity.Error
-                    } as vscode.InputBoxValidationMessage;
-                }
-
-                if (this.service.getDevfile().components) {
-                    for (const c of this.service.getDevfile().components) {
-                        if (c.name === value) {
-                            return {
-                                message: 'Component with this name already exists',
-                                severity: vscode.InputBoxValidationSeverity.Error
-                            } as vscode.InputBoxValidationMessage;
-                        }
-                    }
-                }
-
+            if (!devfile.components) {
+                return name;
             }
-        });
+
+        } while (devfile.components.find(c => c.name === name) !== undefined);
+
+        return name;
+
     }
 
     private async defineComponentImage(): Promise<string | undefined> {
@@ -169,48 +140,6 @@ export class NewContainerImpl implements NewContainer {
         });
     }
 
-    private async defineComponentMemoryLimit(): Promise<string | undefined> {
-        log('NewContainerImpl::defineComponentMemoryLimit()');
-
-        const containerComponents = countContainerComponents(this.service.getDevfile());
-
-        return await vscode.window.showInputBox({
-            value: containerComponents > 1 ? '512Mi' : '2048Mi',
-            title: 'Memory Limit',
-
-            validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-                Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-
-                if (!value) {
-                    return {
-                        message: 'Memory limit cannot be empty',
-                        severity: vscode.InputBoxValidationSeverity.Error
-                    } as vscode.InputBoxValidationMessage;
-                }
-            }
-        });
-    }
-
-    private async defineComponentCpuLimit(): Promise<string | undefined> {
-        log('NewContainerImpl::defineComponentCpuLimit()');
-
-        return await vscode.window.showInputBox({
-            value: '0.5',
-            title: 'CPU Limit',
-
-            validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-                Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-
-                if (!value) {
-                    return {
-                        message: 'CPU limit cannot be empty',
-                        severity: vscode.InputBoxValidationSeverity.Error
-                    } as vscode.InputBoxValidationMessage;
-                }
-            }
-        });
-    }
-
     async ensureAtLeastOneContainerExist(): Promise<boolean> {
         // there should be at least one container component created
         if (countContainerComponents(this.service.getDevfile()) === 0) {
@@ -220,9 +149,7 @@ export class NewContainerImpl implements NewContainer {
                 return false;
             }
 
-            if (!await this.run()) {
-                return false;
-            }
+            return await this.run();
         }
 
         return true;
