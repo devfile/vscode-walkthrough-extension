@@ -73,6 +73,10 @@
       {
         "command": "vscode-devfile.new-command",
         "title": "Devfile: New Command"
+      },
+      {
+        "command": "vscode-devfile.install-yaml",
+        "title": "Devfile: Install YAML Extension"
       }
     ],
 
@@ -83,7 +87,6 @@
         "description": "This wizard will help you create a Devfile with some components and commands",
         "icon": "media/default.png",
         "steps": [
-
           {
             "id": "add-container",
             "title": "Add Container",
@@ -111,6 +114,18 @@
             "description": "Adding a command\n[New Command](command:vscode-devfile.new-command)",
             "media": { "markdown": "media/new-command.md" },
             "completionEvents": []
+          },
+          {
+            "id": "install-yaml",
+            "title": "Add YAML Extension",
+            "description": "Provide Devfile code assistance \n[Install](command:vscode-devfile.install-yaml)",
+            "media": { "markdown": "media/install-yaml.md" }
+          },
+          {
+            "id": "restart-workspace",
+            "title": "Restart Your Workspace From Devfile",
+            "description": "Apply the Devfile and restart \n[Restart](command:vscode-devfile.restart-workspace)",
+            "media": { "markdown": "media/restart-workspace.md" }
           }
         ]
       }

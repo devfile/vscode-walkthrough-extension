@@ -17,6 +17,7 @@ import { DevfileService } from './devfile/devfile-service';
 import { DevfileExtension, NewCommand, NewContainer, NewEndpoint, NewEnvironmentVariable, SaveDevfile } from './model/extension-model';
 import { NewEndpointImpl } from './command/new-endpoint';
 import { NewEnvironmentVariableImpl } from './command/new-environment-variable';
+import { InstallYaml } from './command/install-yaml';
 
 export function initBindings(): Container {
     const container = new Container();
@@ -40,6 +41,8 @@ export function initBindings(): Container {
 
     container.bind(NewEnvironmentVariableImpl).toSelf().inSingletonScope();
     container.bind(NewEnvironmentVariable).toService(NewEnvironmentVariableImpl);
+    
+    container.bind(InstallYaml).toSelf().inSingletonScope();
 
     return container;
 }
