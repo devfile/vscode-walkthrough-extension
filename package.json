@@ -18,6 +18,8 @@
     "Other"
   ],
 
+  "icon": "media/default.png",
+
   "activationEvents": [
     "*"
   ],
