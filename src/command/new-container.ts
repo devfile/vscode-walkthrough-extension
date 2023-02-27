@@ -11,10 +11,8 @@
 import { inject, injectable } from "inversify";
 import * as vscode from 'vscode';
 import { log } from "../logger";
-import * as devfile from "../devfile";
 import { DevfileService } from "../devfile/devfile-service";
 import { NewContainer, SaveDevfile } from "../model/extension-model";
-import { countContainerComponents } from "./util";
 
 @injectable()
 export class NewContainerImpl implements NewContainer {
@@ -53,7 +51,7 @@ export class NewContainerImpl implements NewContainer {
                 this.service.getDevfile().components = [];
             }
 
-            if (countContainerComponents(this.service.getDevfile()) === 0) {
+            if (this.countContainerComponents() === 0) {
                 this.service.getDevfile().components.push({
                     name: componentName,
                     container: {
@@ -109,7 +107,7 @@ export class NewContainerImpl implements NewContainer {
     private async defineComponentImage(): Promise<string | undefined> {
         log('NewContainerImpl::defineComponentImage()');
 
-        const containerComponents = countContainerComponents(this.service.getDevfile());
+        const containerComponents = this.countContainerComponents();
 
         return await vscode.window.showInputBox({
             value: containerComponents === 0 ? 'quay.io/devfile/universal-developer-image:latest' : '',
@@ -142,7 +140,7 @@ export class NewContainerImpl implements NewContainer {
 
     async ensureAtLeastOneContainerExist(): Promise<boolean> {
         // there should be at least one container component created
-        if (countContainerComponents(this.service.getDevfile()) === 0) {
+        if (this.countContainerComponents() === 0) {
             const answer = await vscode.window.showWarningMessage('The first you need to add at least one container', 'New Container');
 
             if ('New Container' !== answer) {
@@ -155,5 +153,12 @@ export class NewContainerImpl implements NewContainer {
         return true;
     }
 
+    private countContainerComponents(): number {
+        if (!this.service.getDevfile().components) {
+            return 0;
+        }
+    
+        return this.service.getDevfile().components.filter(c => c.container).length;
+    }
 
 }

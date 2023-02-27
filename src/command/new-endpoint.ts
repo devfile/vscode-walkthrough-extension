@@ -94,7 +94,6 @@ export class NewEndpointImpl implements NewEndpoint {
 
         return endpoint;
     }
-   
 
 	/**
 	 * Asks user to select a container for the endpoint
