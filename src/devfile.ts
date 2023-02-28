@@ -57,14 +57,3 @@ export interface CommandExec {
   workingDir: string;
   label: string;
 }
-
-export enum DevfileUpdateStrategy {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  Forbidden = 0,
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  Silent = 1,
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  ConfirmUpdate = 2,
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  ConfirmRewrite = 3
-}

@@ -22,22 +22,24 @@ export class SaveDevfileImpl implements SaveDevfile {
 	private service: DevfileService;
 
 	async onDidDevfileUpdate(message?: string): Promise<void> {
-		if (this.service.getUpdateStrategy() === devfile.DevfileUpdateStrategy.Silent) {
-			try {
-				await this.service.saveToFileSystem();
+		if (this.service.getDevfileSource() === 'unset') {
+			return;
+		}
+		
+		try {
+			await this.service.saveToFileSystem();
 
-				if (message) {
-					vscode.window.showInformationMessage(message, 'Open Devfile').then(async answer => {
-						if ('Open Devfile' === answer) {
-							const devfileURI = this.service.getDevfileURI();
-							vscode.window.showTextDocument(devfileURI);
-						}
-					});
-				}
-
-			} catch (err) {
-				log(`ERROR occured: ${err.message}`);
+			if (message) {
+				vscode.window.showInformationMessage(message, 'Open Devfile').then(async answer => {
+					if ('Open Devfile' === answer) {
+						const devfileURI = this.service.getDevfileURI();
+						vscode.window.showTextDocument(devfileURI);
+					}
+				});
 			}
+
+		} catch (err) {
+			log(`ERROR occured: ${err.message}`);
 		}
 	}
 

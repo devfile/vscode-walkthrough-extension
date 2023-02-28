@@ -30,6 +30,10 @@ export class NewEndpointImpl implements NewEndpoint {
     async run(): Promise<boolean> {
 		log('NewEndpointImpl::run()');
 
+        if (!await this.service.initDevfileFromProjectRoot()) {
+            return;
+        }
+
         try {
 			if (!await this.newContainer.ensureAtLeastOneContainerExist()) {
 				log('NewCommandImpl >> container is not created');

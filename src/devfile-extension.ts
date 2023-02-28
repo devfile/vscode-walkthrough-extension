@@ -19,7 +19,6 @@ import { InstallYaml } from './command/install-yaml';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 	const container = initBindings();
-	await container.get(DevfileService).init();
 	container.get(DevfileExtensionImpl).start(context);
 }
 

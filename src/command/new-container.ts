@@ -23,28 +23,20 @@ export class NewContainerImpl implements NewContainer {
     @inject(SaveDevfile)
     private savedevfile: SaveDevfile;
 
-    async run(): Promise<boolean> {
-        log('NewContainerImpl::run()');
+    async run(skipDevfileUpdate?: boolean): Promise<boolean> {
+        if (!skipDevfileUpdate && !await this.service.initDevfileFromProjectRoot()) {
+            return;
+        }
 
         try {
             // container component image
             const containerImage = await this.defineComponentImage();
             if (!containerImage) {
-                log('<< canceled');
                 return false;
             }
-
-            log(`> container image: ${containerImage}`);
-
 
             // component name
-            const componentName = await this.formGenericComponentName();
-            if (!componentName) {
-                log('<< canceled');
-                return false;
-            }
-
-            log(`> component name: ${componentName}`);
+            const componentName = this.formGenericComponentName();
 
             // add new component
             if (!this.service.getDevfile().components) {
@@ -85,7 +77,7 @@ export class NewContainerImpl implements NewContainer {
         return false;
     }
 
-    private async formGenericComponentName(): Promise<string> {
+    private formGenericComponentName(): string {
         const devfile = this.service.getDevfile();
 
         let counter = 0;
@@ -105,8 +97,6 @@ export class NewContainerImpl implements NewContainer {
     }
 
     private async defineComponentImage(): Promise<string | undefined> {
-        log('NewContainerImpl::defineComponentImage()');
-
         const containerComponents = this.countContainerComponents();
 
         return await vscode.window.showInputBox({
@@ -147,7 +137,7 @@ export class NewContainerImpl implements NewContainer {
                 return false;
             }
 
-            return await this.run();
+            return await this.run(true);
         }
 
         return true;

@@ -32,6 +32,10 @@ export class NewCommandImpl implements NewCommand {
     async run(): Promise<boolean> {
         log('NewCommandImpl::run()');
 
+        if (!await this.service.initDevfileFromProjectRoot()) {
+            return;
+        }
+
         try {
             if (!await this.newContainer.ensureAtLeastOneContainerExist()) {
                 log('NewCommandImpl >> container is not created');
