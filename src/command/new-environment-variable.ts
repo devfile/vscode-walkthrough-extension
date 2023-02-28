@@ -18,14 +18,14 @@ import { NewContainer, NewEnvironmentVariable, SaveDevfile } from "../model/exte
 @injectable()
 export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
 
-	@inject(DevfileService)
+    @inject(DevfileService)
     private service: DevfileService;
 
-	@inject(NewContainer)
-	private newContainer: NewContainer;
+    @inject(NewContainer)
+    private newContainer: NewContainer;
 
     @inject(SaveDevfile)
-	private saveDevfile: SaveDevfile;
+    private saveDevfile: SaveDevfile;
 
     async run(): Promise<boolean> {
         if (!await this.service.initDevfileFromProjectRoot()) {
@@ -33,9 +33,9 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
         }
 
         try {
-			if (!await this.newContainer.ensureAtLeastOneContainerExist()) {
-				return;
-			}
+            if (!await this.newContainer.ensureAtLeastOneContainerExist()) {
+                return;
+            }
 
             const environmentVariable = await this.defineEnvironmentVariable();
             if (environmentVariable) {
@@ -55,7 +55,7 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
         // select component container
         const component = await this.selectComponent();
         if (!component) {
-			return undefined;
+            return undefined;
         }
 
         // enter name
@@ -66,9 +66,9 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
 
         const value = await this.enterEnvironmentVariableValue();
         // empty value is allowed
-		if (value === undefined) {
-			return undefined;
-		}
+        if (value === undefined) {
+            return undefined;
+        }
 
         const environmentVariable: devfile.EnvironmentVariable = {
             name,
@@ -83,9 +83,9 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
         return environmentVariable;
     }
 
-	/**
-	 * Asks user to select a container for the environment variable
-	 */
+    /**
+     * Asks user to select a container for the environment variable
+     */
     private async selectComponent(): Promise<devfile.Component | undefined> {
         const componentNames: string[] = this.service.getDevfile().components
             .filter(c => c.container)
@@ -103,9 +103,9 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
                 } as vscode.QuickPickItem;
             });
 
-		const item = await vscode.window.showQuickPick(items, {
-			title: 'Select a container to which the new environment variable will be added',
-		});
+        const item = await vscode.window.showQuickPick(items, {
+            title: 'Select a container to which the new environment variable will be added',
+        });
 
         if (item) {
             return this.service.getDevfile().components.find(c => c.name === item.label);
@@ -118,19 +118,19 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
      * Ask user to enter environment variable name
      */
     private async enterEnvironmentVariableName(component: devfile.Component): Promise<string | undefined> {
-		return await vscode.window.showInputBox({
-			value: 'WELCOME',
-			title: 'Environment Variable Name',
+        return await vscode.window.showInputBox({
+            value: 'WELCOME',
+            title: 'Environment Variable Name',
 
-			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-				if (!value) {
-					return {
-						message: 'Environment variable name cannot be empty',
-						severity: vscode.InputBoxValidationSeverity.Error
-					} as vscode.InputBoxValidationMessage;
-				}
-				
+            validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+                Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+                if (!value) {
+                    return {
+                        message: 'Environment variable name cannot be empty',
+                        severity: vscode.InputBoxValidationSeverity.Error
+                    } as vscode.InputBoxValidationMessage;
+                }
+
                 if (component.container && component.container.env) {
                     if (component.container.env.find(e => e.name === value)) {
                         return {
@@ -139,17 +139,17 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
                         } as vscode.InputBoxValidationMessage;
                     }
                 }
-                
-				return undefined;
-			}
-		});
+
+                return undefined;
+            }
+        });
     }
 
     private async enterEnvironmentVariableValue(): Promise<string | undefined> {
-		return await vscode.window.showInputBox({
-			value: 'Hello World',
-			title: 'Environment Variable Value'
-		});
+        return await vscode.window.showInputBox({
+            value: 'Hello World',
+            title: 'Environment Variable Value'
+        });
     }
 
 }

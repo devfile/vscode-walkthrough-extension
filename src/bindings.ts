@@ -26,10 +26,10 @@ export function initBindings(): Container {
     container.bind(DevfileExtension).toService(DevfileExtensionImpl);
 
     container.bind(DevfileService).toSelf().inSingletonScope();
-    
+
     container.bind(NewCommandImpl).toSelf().inSingletonScope();
     container.bind(NewCommand).toService(NewCommandImpl);
-    
+
     container.bind(SaveDevfileImpl).toSelf().inSingletonScope();
     container.bind(SaveDevfile).toService(SaveDevfileImpl);
 
@@ -41,7 +41,7 @@ export function initBindings(): Container {
 
     container.bind(NewEnvironmentVariableImpl).toSelf().inSingletonScope();
     container.bind(NewEnvironmentVariable).toService(NewEnvironmentVariableImpl);
-    
+
     container.bind(InstallYaml).toSelf().inSingletonScope();
 
     return container;

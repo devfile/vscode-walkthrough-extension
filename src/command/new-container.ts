@@ -147,7 +147,7 @@ export class NewContainerImpl implements NewContainer {
         if (!this.service.getDevfile().components) {
             return 0;
         }
-    
+
         return this.service.getDevfile().components.filter(c => c.container).length;
     }
 

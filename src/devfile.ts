@@ -9,10 +9,10 @@
  ***********************************************************************/
 
 export interface Devfile {
-  schemaVersion?: string;
-  metadata?: Metadata;
-  components?: Component[];
-  commands?: Command[];
+    schemaVersion?: string;
+    metadata?: Metadata;
+    components?: Component[];
+    commands?: Command[];
 }
 
 export interface Metadata {
@@ -36,24 +36,24 @@ export interface ComponentContainer {
 }
 
 export interface Endpoint {
-	name: string;
-	targetPort: number;
-	exposure?: 'public' | 'internal' | 'none';
+    name: string;
+    targetPort: number;
+    exposure?: 'public' | 'internal' | 'none';
 }
 
 export interface EnvironmentVariable {
-	name: string;
-	value: string;
+    name: string;
+    value: string;
 }
 
 export interface Command {
-  id: string;
-  exec: CommandExec;
+    id: string;
+    exec: CommandExec;
 }
 
 export interface CommandExec {
-  component: string;
-  commandLine: string;
-  workingDir: string;
-  label: string;
+    component: string;
+    commandLine: string;
+    workingDir: string;
+    label: string;
 }

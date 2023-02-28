@@ -18,14 +18,14 @@ import * as devfile from "../devfile";
 @injectable()
 export class NewEndpointImpl implements NewEndpoint {
 
-	@inject(DevfileService)
+    @inject(DevfileService)
     private service: DevfileService;
 
-	@inject(NewContainer)
-	private newContainer: NewContainer;
+    @inject(NewContainer)
+    private newContainer: NewContainer;
 
-	@inject(SaveDevfile)
-	private saveDevfile: SaveDevfile;
+    @inject(SaveDevfile)
+    private saveDevfile: SaveDevfile;
 
     async run(): Promise<boolean> {
         if (!await this.service.initDevfileFromProjectRoot()) {
@@ -33,9 +33,9 @@ export class NewEndpointImpl implements NewEndpoint {
         }
 
         try {
-			if (!await this.newContainer.ensureAtLeastOneContainerExist()) {
-				return;
-			}
+            if (!await this.newContainer.ensureAtLeastOneContainerExist()) {
+                return;
+            }
 
             const endpoint = await this.defineEndpoint();
             if (endpoint) {
@@ -55,7 +55,7 @@ export class NewEndpointImpl implements NewEndpoint {
         // select component container
         const component = await this.selectComponent();
         if (!component) {
-			return undefined;
+            return undefined;
         }
 
         // enter port
@@ -85,9 +85,9 @@ export class NewEndpointImpl implements NewEndpoint {
         return endpoint;
     }
 
-	/**
-	 * Asks user to select a container for the endpoint
-	 */
+    /**
+     * Asks user to select a container for the endpoint
+     */
     private async selectComponent(): Promise<devfile.Component | undefined> {
         const componentNames: string[] = this.service.getDevfile().components
             .filter(c => c.container)
@@ -105,9 +105,9 @@ export class NewEndpointImpl implements NewEndpoint {
                 } as vscode.QuickPickItem;
             });
 
-		const item = await vscode.window.showQuickPick(items, {
-			title: 'Select a container to which the new endpoint will be added',
-		});
+        const item = await vscode.window.showQuickPick(items, {
+            title: 'Select a container to which the new endpoint will be added',
+        });
 
         if (item) {
             return this.service.getDevfile().components.find(c => c.name === item.label);
@@ -118,25 +118,25 @@ export class NewEndpointImpl implements NewEndpoint {
 
     private async enterExposedPort(component: devfile.Component): Promise<number | undefined> {
         const port = await vscode.window.showInputBox({
-			value: '8080',
-			title: 'Exposed Port',
+            value: '8080',
+            title: 'Exposed Port',
 
-			validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
-			Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
-				if (!value) {
-					return {
-						message: 'Exposed port cannot be empty',
-						severity: vscode.InputBoxValidationSeverity.Error
-					} as vscode.InputBoxValidationMessage;
-				}
+            validateInput: (value): string | vscode.InputBoxValidationMessage | undefined | null |
+                Thenable<string | vscode.InputBoxValidationMessage | undefined | null> => {
+                if (!value) {
+                    return {
+                        message: 'Exposed port cannot be empty',
+                        severity: vscode.InputBoxValidationSeverity.Error
+                    } as vscode.InputBoxValidationMessage;
+                }
 
-				const pValue: number = Number.parseInt(value);
-				if (!Number.isInteger(pValue)) {
-					return {
-						message: 'Only Integer is allowed',
-						severity: vscode.InputBoxValidationSeverity.Error
-					} as vscode.InputBoxValidationMessage;
-				}
+                const pValue: number = Number.parseInt(value);
+                if (!Number.isInteger(pValue)) {
+                    return {
+                        message: 'Only Integer is allowed',
+                        severity: vscode.InputBoxValidationSeverity.Error
+                    } as vscode.InputBoxValidationMessage;
+                }
 
                 if (component.container && component.container.endpoints) {
                     if (component.container.endpoints.find(e => e.targetPort === pValue)) {
@@ -147,9 +147,9 @@ export class NewEndpointImpl implements NewEndpoint {
                     }
                 }
 
-				return undefined;
-			}
-		});
+                return undefined;
+            }
+        });
 
         return Number.parseInt(port);
     }
@@ -175,8 +175,8 @@ export class NewEndpointImpl implements NewEndpoint {
         ];
 
         const item = await vscode.window.showQuickPick(items, {
-			title: 'Describe how the port should be exposed on the network'
-		});
+            title: 'Describe how the port should be exposed on the network'
+        });
 
         if (item) {
             switch (item.label) {

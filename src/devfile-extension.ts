@@ -17,8 +17,8 @@ import { initBindings } from './bindings';
 import { InstallYaml } from './command/install-yaml';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-	const container = initBindings();
-	container.get(DevfileExtensionImpl).start(context);
+    const container = initBindings();
+    container.get(DevfileExtensionImpl).start(context);
 }
 
 // This method is called when your extension is deactivated
@@ -27,27 +27,27 @@ export function deactivate() { }
 @injectable()
 export class DevfileExtensionImpl implements DevfileExtension {
 
-	@inject(NewContainer)
-	private newContainer: NewContainer;
+    @inject(NewContainer)
+    private newContainer: NewContainer;
 
-	@inject(NewEndpoint)
-	private newEndpoint: NewEndpoint;
+    @inject(NewEndpoint)
+    private newEndpoint: NewEndpoint;
 
-	@inject(NewEnvironmentVariable)
-	private newEnvironmentVariable: NewEnvironmentVariable;
+    @inject(NewEnvironmentVariable)
+    private newEnvironmentVariable: NewEnvironmentVariable;
 
-	@inject(NewCommand)
-	private newCommand: NewCommand;
+    @inject(NewCommand)
+    private newCommand: NewCommand;
 
-	@inject(InstallYaml)
-	private installYaml: InstallYaml;
+    @inject(InstallYaml)
+    private installYaml: InstallYaml;
 
-	public async start(context: vscode.ExtensionContext): Promise<void> {
-		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-container', async () => this.newContainer.run()));
-		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-endpoint', async () => this.newEndpoint.run()));
-		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-environment-variable', async () => this.newEnvironmentVariable.run()));
-		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-command', async () => this.newCommand.run()));
-		context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.install-yaml', async () => this.installYaml.run()));
-	}
+    public async start(context: vscode.ExtensionContext): Promise<void> {
+        context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-container', async () => this.newContainer.run()));
+        context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-endpoint', async () => this.newEndpoint.run()));
+        context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-environment-variable', async () => this.newEnvironmentVariable.run()));
+        context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.new-command', async () => this.newCommand.run()));
+        context.subscriptions.push(vscode.commands.registerCommand('vscode-devfile.install-yaml', async () => this.installYaml.run()));
+    }
 
 }

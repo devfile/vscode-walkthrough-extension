@@ -138,7 +138,7 @@ export class NewCommandImpl implements NewCommand {
         const componentNames: string[] = this.service.getDevfile().components
             .filter(c => c.container)
             .map(c => c.name);
-        
+
         if (componentNames.length === 1) {
             return componentNames[0];
         }

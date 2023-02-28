@@ -73,7 +73,7 @@ export class DevfileService {
         }
 
         this.ensureNameIsSet(devfileYaml.devfile);
-        
+
         this.devfile = devfileYaml.devfile;
         this.devfileSource = devfileYaml.source;
 
@@ -81,9 +81,9 @@ export class DevfileService {
     }
 
     private async fetchDevfileFromFile(source: '.devfile.yaml' | 'devfile.yaml'): Promise<{
-                        devfile: devfile.Devfile,
-                        source: '.devfile.yaml' | 'devfile.yaml'
-                    } | undefined> {
+        devfile: devfile.Devfile,
+        source: '.devfile.yaml' | 'devfile.yaml'
+    } | undefined> {
 
         const wsFolderUri = vscode.workspace.workspaceFolders[0].uri;
         const dotDevfileUri = wsFolderUri.with({ path: posix.join(wsFolderUri.path, source) });
@@ -110,7 +110,7 @@ export class DevfileService {
 
             return undefined;
         }
-        
+
         throw new Error('Not a file');
     }
 

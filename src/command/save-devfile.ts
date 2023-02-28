@@ -17,29 +17,29 @@ import { SaveDevfile } from '../model/extension-model';
 @injectable()
 export class SaveDevfileImpl implements SaveDevfile {
 
-	@inject(DevfileService)
-	private service: DevfileService;
+    @inject(DevfileService)
+    private service: DevfileService;
 
-	async onDidDevfileUpdate(message?: string): Promise<void> {
-		if (this.service.getDevfileSource() === 'unset') {
-			return;
-		}
-		
-		try {
-			await this.service.saveToFileSystem();
+    async onDidDevfileUpdate(message?: string): Promise<void> {
+        if (this.service.getDevfileSource() === 'unset') {
+            return;
+        }
 
-			if (message) {
-				vscode.window.showInformationMessage(message, 'Open Devfile').then(async answer => {
-					if ('Open Devfile' === answer) {
-						const devfileURI = this.service.getDevfileURI();
-						vscode.window.showTextDocument(devfileURI);
-					}
-				});
-			}
+        try {
+            await this.service.saveToFileSystem();
 
-		} catch (err) {
-			log(`ERROR occured: ${err.message}`);
-		}
-	}
+            if (message) {
+                vscode.window.showInformationMessage(message, 'Open Devfile').then(async answer => {
+                    if ('Open Devfile' === answer) {
+                        const devfileURI = this.service.getDevfileURI();
+                        vscode.window.showTextDocument(devfileURI);
+                    }
+                });
+            }
+
+        } catch (err) {
+            log(`ERROR occured: ${err.message}`);
+        }
+    }
 
 }
