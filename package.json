@@ -87,7 +87,7 @@
         "id": "get-started-with-devfile",
         "title": "Get Started with Devfile",
         "description": "This wizard will help you create a Devfile with some components and commands",
-        "icon": "media/default.png",
+        "icon": "media/che.png",
         "steps": [
           {
             "id": "add-container",
