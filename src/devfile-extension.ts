@@ -14,7 +14,6 @@ import * as vscode from 'vscode';
 import { DevfileExtension, NewCommand, NewContainer, NewEndpoint, NewEnvironmentVariable, SaveDevfile } from './model/extension-model';
 import { inject, injectable } from 'inversify';
 import { initBindings } from './bindings';
-import { DevfileService } from './devfile/devfile-service';
 import { InstallYaml } from './command/install-yaml';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {

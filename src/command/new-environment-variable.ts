@@ -28,19 +28,14 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
 	private saveDevfile: SaveDevfile;
 
     async run(): Promise<boolean> {
-        log('NewEnvironmentVariable::run()');
-
         if (!await this.service.initDevfileFromProjectRoot()) {
             return;
         }
 
         try {
 			if (!await this.newContainer.ensureAtLeastOneContainerExist()) {
-				log('NewCommandImpl >> container is not created');
 				return;
 			}
-
-			log('>> adding an environment variable...');
 
             const environmentVariable = await this.defineEnvironmentVariable();
             if (environmentVariable) {
@@ -48,8 +43,6 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
                 await this.saveDevfile.onDidDevfileUpdate(`Environmane '${environmentVariable.name}' has been created successfully`);
                 return true;
             }
-
-            log('<< canceled');
 
         } catch (err) {
             log(`ERROR occured: ${err.message}`);
@@ -59,20 +52,14 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
     }
 
     private async defineEnvironmentVariable(): Promise<devfile.EnvironmentVariable | undefined> {
-        log('');
-        log('>> defineEvironmentVariable ....');
-
         // select component container
         const component = await this.selectComponent();
         if (!component) {
 			return undefined;
         }
 
-        log(`> component ${component.name}`);
-
         // enter name
         const name = await this.enterEnvironmentVariableName(component);
-        log(`> name ${name}`);
         if (!name) {
             return undefined;
         }
@@ -80,7 +67,6 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
         const value = await this.enterEnvironmentVariableValue();
         // empty value is allowed
 		if (value === undefined) {
-			log('<< value is UNDEFINED');
 			return undefined;
 		}
 
@@ -111,8 +97,6 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
 
         const items: vscode.QuickPickItem[] = this.service.getDevfile().components
             .filter(c => c.container).map(c => {
-                log(`> item ${c.name}`);
-
                 return {
                     label: c.name,
                     detail: c.container.image,

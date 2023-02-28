@@ -28,19 +28,14 @@ export class NewEndpointImpl implements NewEndpoint {
 	private saveDevfile: SaveDevfile;
 
     async run(): Promise<boolean> {
-		log('NewEndpointImpl::run()');
-
         if (!await this.service.initDevfileFromProjectRoot()) {
             return;
         }
 
         try {
 			if (!await this.newContainer.ensureAtLeastOneContainerExist()) {
-				log('NewCommandImpl >> container is not created');
 				return;
 			}
-
-			log('>> adding an endpoint...');
 
             const endpoint = await this.defineEndpoint();
             if (endpoint) {
@@ -48,8 +43,6 @@ export class NewEndpointImpl implements NewEndpoint {
                 await this.saveDevfile.onDidDevfileUpdate(`Endpoint '${endpoint.name}' has been created successfully`);
                 return true;
             }
-
-            log('<< canceled');
 
         } catch (err) {
             log(`ERROR occured: ${err.message}`);
@@ -59,27 +52,20 @@ export class NewEndpointImpl implements NewEndpoint {
     }
 
     private async defineEndpoint(): Promise<devfile.Endpoint | undefined> {
-        log('');
-        log('>> defineEndpoint ....');
-
         // select component container
         const component = await this.selectComponent();
         if (!component) {
 			return undefined;
         }
 
-        log(`> component ${component.name}`);
-
         // enter port
         const exposedPort = await this.enterExposedPort(component);
-        log(`> port ${exposedPort}`);
         if (!exposedPort) {
             return undefined;
         }
 
         // enter exposure
         const exposure = await this.enterExposure();
-        log(`> exposure ${exposure}`);
         if (!exposure) {
             return undefined;
         }
@@ -113,8 +99,6 @@ export class NewEndpointImpl implements NewEndpoint {
 
         const items: vscode.QuickPickItem[] = this.service.getDevfile().components
             .filter(c => c.container).map(c => {
-                log(`> item ${c.name}`);
-
                 return {
                     label: c.name,
                     detail: c.container.image,

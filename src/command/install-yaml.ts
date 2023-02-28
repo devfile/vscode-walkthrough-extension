@@ -9,7 +9,6 @@
  ***********************************************************************/
 
 import { injectable } from "inversify";
-import { log } from "../logger";
 import * as vscode from 'vscode';
 
 const SEARCH = 'Show in Marketplace';

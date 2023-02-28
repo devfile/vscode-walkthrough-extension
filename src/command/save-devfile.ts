@@ -12,7 +12,6 @@ import * as vscode from 'vscode';
 import { inject, injectable } from "inversify";
 import { DevfileService } from "../devfile/devfile-service";
 import { log } from '../logger';
-import * as devfile from "../devfile";
 import { SaveDevfile } from '../model/extension-model';
 
 @injectable()

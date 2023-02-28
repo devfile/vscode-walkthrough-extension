@@ -30,19 +30,15 @@ export class NewCommandImpl implements NewCommand {
     private idCounter = 0;
 
     async run(): Promise<boolean> {
-        log('NewCommandImpl::run()');
-
         if (!await this.service.initDevfileFromProjectRoot()) {
             return;
         }
 
         try {
             if (!await this.newContainer.ensureAtLeastOneContainerExist()) {
-                log('NewCommandImpl >> container is not created');
                 return;
             }
 
-            log('>> adding a command...');
             const command = await this.defineCommand();
             if (command) {
                 if (!this.service.getDevfile().commands) {
@@ -56,8 +52,6 @@ export class NewCommandImpl implements NewCommand {
                 return true;
             }
 
-            log('<< canceled');
-
         } catch (err) {
             log(`ERROR occured: ${err.message}`);
         }
@@ -66,22 +60,17 @@ export class NewCommandImpl implements NewCommand {
     }
 
     private async defineCommand(): Promise<devfile.Command | undefined> {
-        log('NewCommandImpl::defineCommand()');
-
         const label = await this.enterLabel();
-        log(`>> label ${label}`);
         if (!label) {
             return undefined;
         }
 
         const component = await this.selectComponent();
-        log(`>> component ${component}`);
         if (!component) {
             return undefined;
         }
 
         const commandLine = await this.enterCommandLine();
-        log(`>> command line ${commandLine}`);
         if (!commandLine) {
             return undefined;
         }
@@ -156,8 +145,6 @@ export class NewCommandImpl implements NewCommand {
 
         const items: vscode.QuickPickItem[] = this.service.getDevfile().components
             .filter(c => c.container).map(c => {
-                log(`> item ${c.name}`);
-
                 return {
                     label: c.name,
                     detail: c.container.image,

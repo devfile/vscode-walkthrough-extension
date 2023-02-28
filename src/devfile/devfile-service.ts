@@ -173,23 +173,12 @@ export class DevfileService {
                 return true;
             }
 
+            // need to find a way how to validate the Devfile
+
         } catch (e) {
             log(e.message);
         }
 
-        // // old check
-        // if (!this.devfile.schemaVersion) {
-        //     log('<< Devfile :: schemaVersion is not set');
-        //     return false;
-        // }
-
-        // if (this.devfile.metadata ||
-        //     this.devfile.components ||
-        //     this.devfile.commands) {
-        //         return true;
-        // }
-
-        log('<< Devfile :: wrong format');
         return false;
     }
 
