@@ -2,7 +2,7 @@
 
 To incorporate custom tools into the workspace, define an image-based configuration of a container in a workspace using the container component type.
 
-```
+```yaml
 components:
   - name: dev
     container:
