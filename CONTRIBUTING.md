@@ -3,7 +3,10 @@ Contribute to VS Code Devfile extension
 
 ### Step 1 : Open this repository in an Eclipse Che cloud development environment
 
-Use this git repository URI to create a workspace using factory
+Use this GitHub repository URL in Eclipse Che Dashboard or in a direct link `https://<che-hostname>/#https://github.com/vitaliy-guliy/vscode-devfile/`.
+
+Click on the link below to open it in Red Hat Developer Sandbox:
+[![Contribute](https://img.shields.io/static/v1?label=Open%20in%20Red%20Hat%20Developer%20Sandbox...&message=Free%20as%20free%20🍺%20and%20free%20💬..&logo=eclipseche&color=FDB940&labelColor=525C86)](https://workspaces.openshift.com#https://github.com/vitaliy-guliy/vscode-devfile/)
 
 ### Step 2 : Compile extension
 
