@@ -21,7 +21,7 @@ Now you can test the extension in separate VS Code instance.
 
 To run a separate VS Code instance focus the editor or the `Explorer`, press `F5`. After a few seconds VS Code starts a separate instance in a new browser tab.
 
-A new `Get Started with Devfile` walkthrough item should appear in the `Welcome` tab.
+In the new VS Code instance a `Welcome` tab is opened with a link to the `Get Started with Devfile` VS Code Walkthrough.
 If the item is not there, it could probably need to expand the walkthrougs by clicking `More...` on the right.
 
 ### Step 4 : Build `vsix` binary
