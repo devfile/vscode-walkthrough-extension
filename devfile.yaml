@@ -15,7 +15,6 @@ commands:
     exec:
       label: "Install dependencies"
       component: tools
-      workingDir: ${PROJECT_SOURCE}
       commandLine: "npm install"
       group:
         kind: build
