@@ -30,7 +30,6 @@ commands:
     exec:
       label: "Build vsix binary"
       component: tools
-      workingDir: ${PROJECT_SOURCE}
       commandLine: "npm run build-vsix"
       group:
         kind: build
