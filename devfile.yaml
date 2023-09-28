@@ -6,7 +6,6 @@ components:
     container:
       image: quay.io/devfile/universal-developer-image:ubi8-latest
       memoryLimit: 4G
-      mountSources: true
 
 commands:
   - id: install-dependencies
