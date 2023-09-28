@@ -7,7 +7,7 @@ Use this git repository URI to create a workspace using factory
 
 ### Step 2 : Compile extension
 
-The first you need to install node dependencies by running task `devfile: Install dependencies`.
+The first you need to install node dependencies by running the task `devfile: Install dependencies`.
 The task progress will be shown in the output below.
 
 Once dependencies have beeen installed, you have to compile the extension with task `devfile: Compile`.
