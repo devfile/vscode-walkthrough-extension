@@ -21,7 +21,6 @@ commands:
     exec:
       label: "Compile"
       component: tools
-      workingDir: ${PROJECT_SOURCE}
       commandLine: "npm run compile"
       group:
         kind: build
