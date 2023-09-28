@@ -1,7 +1,7 @@
 Contribute to VS Code Devfile extension
 ================
 
-### Step 1 : Create workspace
+### Step 1 : Open this repository in an Eclipse Che cloud development environment
 
 Use this git repository URI to create a workspace using factory
 
