@@ -16,9 +16,6 @@ commands:
       label: "Install dependencies"
       component: tools
       commandLine: "npm install"
-      group:
-        kind: build
-        isDefault: true
 
   - id: compile
     exec:
