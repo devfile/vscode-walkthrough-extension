@@ -19,7 +19,7 @@ Now you can test the extension in separate VS Code instance.
 
 > Note that it is not possible to launch the extension until you compile it.
 
-At this step it is enough to focus the editor or the `Explorer`, press `F5` and VS Code will start a separate instance in a new browser tab.
+To run a separate VS Code instance focus the editor or the `Explorer`, press `F5`. After a few seconds VS Code starts a separate instance in a new browser tab.
 
 A new `Get Started with Devfile` walkthrough item should appear in the `Welcome` tab.
 If the item is not there, it could probably need to expand the walkthrougs by clicking `More...` on the right.
