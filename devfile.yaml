@@ -34,4 +34,4 @@ commands:
       commandLine: "npm run build-vsix"
       group:
         kind: build
-        isDefault: true
+        isDefault: false
