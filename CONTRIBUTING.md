@@ -38,4 +38,4 @@ When build finished, a new file `redhat-vscode-devfile-0.0.1.vsix` will appear i
 
 The file can be downloaded and used it in other local or remote VS Code instances.
 
-> It is easy to install vsix binary to any VS Code. You have only to drag and drop the file into the `Extensions` view.
+> Installing a vsix binary in VS Code is easy: drag and drop the file into the `Extensions` view.
