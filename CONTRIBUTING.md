@@ -10,7 +10,7 @@ Use this git repository URI to create a workspace using factory
 The first you need to install node dependencies by running the task `devfile: Install dependencies`.
 The task progress will be shown in VS Code Terminal output.
 
-Once dependencies have beeen installed, you have to compile the extension with task `devfile: Compile`.
+Once dependencies have been installed, compile the extension with task `devfile: Compile`.
 It will create `out` directory containing the compiled extension.
 
 ### Step 3 : Run the extension in separte VS Code instance
