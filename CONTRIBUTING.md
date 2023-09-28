@@ -17,7 +17,7 @@ It will create an `out` directory containing the compiled extension.
 
 Now you can test the extension in a separate VS Code instance.
 
-> Note that it is not possible to launch the extension until you compile it.
+> Note that it is not possible to launch the extension until you compile it as described in step 2.
 
 To run a separate VS Code instance focus the editor or the `Explorer`, press `F5`. After a few seconds VS Code starts a separate instance in a new browser tab.
 
