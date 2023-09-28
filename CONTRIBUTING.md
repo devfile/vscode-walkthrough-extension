@@ -15,7 +15,7 @@ It will create an `out` directory containing the compiled extension.
 
 ### Step 3 : Run the extension in separte VS Code instance
 
-Now you can test the extension in separate VS Code instance.
+Now you can test the extension in a separate VS Code instance.
 
 > Note that it is not possible to launch the extension until you compile it.
 
