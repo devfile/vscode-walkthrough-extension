@@ -11,7 +11,7 @@ The first you need to install node dependencies by running the task `devfile: In
 The task progress will be shown in VS Code Terminal output.
 
 Once dependencies have been installed, compile the extension with task `devfile: Compile`.
-It will create `out` directory containing the compiled extension.
+It will create an `out` directory containing the compiled extension.
 
 ### Step 3 : Run the extension in separte VS Code instance
 
