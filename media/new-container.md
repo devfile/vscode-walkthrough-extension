@@ -1,6 +1,6 @@
 # Adding a container component
 
-To incorporate custom tools into the workspace, define an image-based configuration of a container in a workspace using the container component type.
+To customize the container that hosts the Cloud Development Environment, provide a specific image using the `container` component type.
 
 ```yaml
 components:
@@ -12,3 +12,10 @@ components:
         cpuRequest: 0.1
         cpuLimit: 0.5
 ```
+
+References:
+- [Corresponding article in the Devfile documentation][def1]
+- [`container` in the Devfile API reference][def2]
+
+[def1]: https://devfile.io/docs/2.2.2/adding-a-container-component
+[def2]: https://devfile.io/docs/2.2.2/devfile-schema#components-container

@@ -13,24 +13,22 @@ components:
 commands:
   - id: install-dependencies
     exec:
-      label: "Install dependencies"
+      label: 1. Install dependencies
       component: tools
-      commandLine: "npm install"
-
+      commandLine: npm install
   - id: compile
     exec:
-      label: "Compile"
+      label: 2. Compile
       component: tools
-      commandLine: "npm run compile"
+      commandLine: npm run compile
       group:
         kind: build
         isDefault: true
-
   - id: build-vsix
     exec:
-      label: "Build vsix binary"
+      label: 3. Build vsix binary
       component: tools
-      commandLine: "npm run build-vsix"
+      commandLine: npm run build-vsix
       group:
         kind: build
         isDefault: false
