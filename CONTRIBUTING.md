@@ -3,11 +3,11 @@ Contribute to VS Code Devfile extension
 
 ### Step 1 : Open this repository in an Eclipse Che cloud development environment
 
-Use this GitHub repository URL in Eclipse Che Dashboard or in a direct link `https://<che-hostname>/#https://github.com/vitaliy-guliy/vscode-devfile/`.
+Use this GitHub repository URL in Eclipse Che Dashboard or in a direct link `https://<che-hostname>/#https://github.com/devfile/vscode-walkthrough-extension/`.
 
 Click on the link below to open it in Red Hat Developer Sandbox:
 
-[![Contribute](https://img.shields.io/static/v1?label=Open%20in%20Red%20Hat%20Developer%20Sandbox...&message=Free%20as%20free%20🍺%20and%20free%20💬..&logo=eclipseche&color=FDB940&labelColor=525C86)](https://workspaces.openshift.com#https://github.com/vitaliy-guliy/vscode-devfile/)
+[![Contribute](https://img.shields.io/static/v1?label=Open%20in%20Red%20Hat%20Developer%20Sandbox...&message=Free%20as%20free%20🍺%20and%20free%20💬..&logo=eclipseche&color=FDB940&labelColor=525C86)](https://workspaces.openshift.com#https://github.com/devfile/vscode-walkthrough-extension/)
 
 ### Step 2 : Compile extension
 
@@ -38,7 +38,7 @@ In a terminal you may be warned with a message below:
 
 Just type `y` to the terminal and press `Enter` to confirm the build.
 
-When build finished, a new file `redhat-vscode-devfile-0.0.1.vsix` will appear in the project root.
+When build finished, a new file `devfile-vscode-devfile-0.0.1.vsix` will appear in the project root.
 
 The file can be downloaded and used in other local or remote VS Code instances.
 

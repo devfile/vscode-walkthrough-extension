@@ -75,7 +75,7 @@ export class NewEndpointImpl implements NewEndpoint {
         }
 
         const endpoint: devfile.Endpoint = {
-            name: exposedPort.toString(),
+            name: `port-${exposedPort}`,
             targetPort: exposedPort,
             exposure
         };

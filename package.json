@@ -1,12 +1,12 @@
 {
   "name": "vscode-devfile",
-  "publisher": "redhat",
-  "displayName": "vscode-devfile",
-  "description": "Allows the user to easily create a Devfile",
-  "version": "0.0.1",
+  "publisher": "devfile",
+  "displayName": "Devfile Walkthrough",
+  "description": "Generate and edit Devfiles in a flash.",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vitaliy-guliy/vscode-devfile"
+    "url": "https://github.com/devfile/vscode-walkthrough-extension"
   },
   "engines": {
     "vscode": "^1.74.0"
@@ -16,18 +16,19 @@
   ],
   "icon": "media/devfile-icon.png",
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "main": "./out/devfile-extension.js",
   "scripts": {
-    "build-vsix": "vsce package --out redhat-vscode-devfile-0.0.1.vsix",
-    "build-vsix-ignorewarnings": "vsce package --allow-star-activation --out redhat-vscode-devfile-0.0.1.vsix",
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "cleanup": "rm -f ./redhat-vscode-devfile-0.0.1.vsix && rm -rf ./out"
+    "esbuild-base": "rimraf out && esbuild ./src/devfile-extension.ts --bundle --outfile=out/devfile-extension.js --external:vscode --format=cjs --platform=node",
+    "compile": "npm run esbuild-base -- --sourcemap",
+    "watch": "npm run esbuild-base -- --sourcemap --watch",
+    "build-vsix": "vsce package",
+    "build-vsix-ignorewarnings": "vsce package --allow-star-activation --out devfile-vscode-devfile-0.0.1.vsix",
+    "vscode:prepublish": "npm run -S esbuild-base -- --minify",
+    "pretest": "npm run compile && npm run eslint",
+    "eslint": "eslint src --ext ts",
+    "cleanup": "rm -f ./devfile-vscode-devfile-0.0.1.vsix && rm -rf ./out"
   },
   "dependencies": {
     "inversify": "^5.0.1",
@@ -39,7 +40,8 @@
     "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
-    "eslint": "^8.33.0",
+    "esbuild": "^0.19.12",
+    "eslint": "^8.56.0",
     "typescript": "^4.9.4",
     "vsce": "^2.15.0"
   },
@@ -69,8 +71,8 @@
     "walkthroughs": [
       {
         "id": "get-started-with-devfile",
-        "title": "Get Started with Devfile",
-        "description": "This wizard will help you create a Devfile with some components and commands",
+        "title": "Get Started with the Devfile",
+        "description": "Generate a Devfile to customize your Cloud Development Environment",
         "icon": "media/devfile-icon.png",
         "steps": [
           {
@@ -120,7 +122,7 @@
           {
             "id": "restart-workspace",
             "title": "Restart Your Workspace From Devfile",
-            "description": "Apply the Devfile and restart \n[Restart](command:vscode-devfile.restart-workspace)",
+            "description": "Apply the Devfile and restart \n[Restart](command:che-remote.command.restartFromLocalDevfile)",
             "media": {
               "markdown": "media/restart-workspace.md"
             }

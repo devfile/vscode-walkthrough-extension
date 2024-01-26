@@ -1,10 +1,10 @@
-# @redhat.vscode-devfile
+# @devfile.vscode-devfile
 
-With a wizard the extension provided you can easily create the Devfile.
+With a wizard you can easily create a Devfile to customize the Cloud Development Environment.
 
-![Che-Theia](media/extension-screenshot.png)
+![vscode-devfile](media/extension-screenshot.png)
 
 
 ---
 
-To build the extension, use Node 16 and later.
+To build the extension, use Node 16 or later.
