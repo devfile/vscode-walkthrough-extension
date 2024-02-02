@@ -24,9 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check Out vscode-devfile
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set Up NodeJS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: "18"
       - name: Install NodeJS dependencies
@@ -42,7 +42,7 @@ jobs:
           vsce package -o vscode-devfile-${{ env.EXT_VERSION }}-${GITHUB_RUN_NUMBER}.vsix
           ls -lash *.vsix
       - name: Upload VSIX Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: vscode-devfile
           path: |
@@ -64,14 +64,14 @@ jobs:
     needs: packaging-job
     steps:
       - name: Set Up NodeJS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: "18"
       - name: Install dependencies
         run: |
           npm install -g typescript "@vscode/vsce" "ovsx"
       - name: Download VSIX
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Publish to VS Code Marketplace
         if: ${{ inputs.publishToMarketPlace == 'true' }}
         run: |
