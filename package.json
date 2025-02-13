@@ -31,7 +31,7 @@
     "cleanup": "rm -f ./devfile-vscode-devfile-0.0.1.vsix && rm -rf ./out"
   },
   "dependencies": {
-    "inversify": "^5.0.1",
+    "inversify": "^6.0.2",
     "js-yaml": "^3.13.1",
     "reflect-metadata": "^0.1.13"
   },
