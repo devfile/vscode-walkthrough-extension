@@ -33,7 +33,7 @@
   "dependencies": {
     "inversify": "^5.0.1",
     "js-yaml": "^3.13.1",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@types/node": "16.x",
