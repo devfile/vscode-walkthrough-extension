@@ -40,7 +40,7 @@ export class NewEnvironmentVariableImpl implements NewEnvironmentVariable {
             const environmentVariable = await this.defineEnvironmentVariable();
             if (environmentVariable) {
                 // update Devfile, show a popup with proposal to open the Devfile
-                await this.saveDevfile.onDidDevfileUpdate(`Environmane '${environmentVariable.name}' has been created successfully`);
+                await this.saveDevfile.onDidDevfileUpdate(`Environment variable '${environmentVariable.name}' has been created successfully`);
                 return true;
             }
 
