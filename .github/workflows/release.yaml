@@ -43,7 +43,7 @@ jobs:
           ls -lash *.vsix
       - name: Calculate SHA256 Hash
         run: |
-          sum256hash vscode-devfile-${{ env.EXT_VERSION }}-${GITHUB_RUN_NUMBER}.vsix
+          sha256sum vscode-devfile-${{ env.EXT_VERSION }}-${GITHUB_RUN_NUMBER}.vsix
       - name: Upload VSIX Artifacts
         uses: actions/upload-artifact@v4.6.1
         with:
