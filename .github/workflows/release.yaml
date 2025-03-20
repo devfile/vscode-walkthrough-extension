@@ -72,11 +72,18 @@ jobs:
           npm install -g typescript "@vscode/vsce" "ovsx"
       - name: Download VSIX
         uses: actions/download-artifact@v4.2.0
+        with:
+          merge-multiple: true
+          path: .
+      - name: List downloaded files
+        run: ls -ll *.vsix
+      - name: Set EXT_VERSION variable
+        run: echo "EXT_VERSION=$(cat package.json | jq -r .version)" >> $GITHUB_ENV
       - name: Publish to VS Code Marketplace
         if: ${{ inputs.publishToMarketPlace == 'true' }}
         run: |
-          vsce publish -p ${{ secrets.VSCODE_MARKETPLACE_TOKEN }} --packagePath vscode-walkthrough-extension/vscode-devfile-*-${GITHUB_RUN_NUMBER}.vsix
+          vsce publish -p ${{ secrets.VSCODE_MARKETPLACE_TOKEN }} --packagePath vscode-devfile-${{ env.EXT_VERSION }}-${GITHUB_RUN_NUMBER}.vsix
       - name: Publish to OpenVSX Registry
         if: ${{ inputs.publishToOVSX == 'true' == 'true' }}
         run: |
-          ovsx publish -p ${{ secrets.OVSX_MARKETPLACE_TOKEN }}  --packagePath vscode-walkthrough-extension/vscode-devfile-*-${GITHUB_RUN_NUMBER}.vsix
+          ovsx publish -p ${{ secrets.OVSX_MARKETPLACE_TOKEN }}  --packagePath vscode-devfile-${{ env.EXT_VERSION }}-${GITHUB_RUN_NUMBER}.vsix
