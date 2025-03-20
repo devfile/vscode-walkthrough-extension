@@ -86,6 +86,6 @@ jobs:
         run: |
           vsce publish -p ${{ secrets.VSCODE_MARKETPLACE_TOKEN }} --packagePath vscode-devfile-${{ env.EXT_VERSION }}-${GITHUB_RUN_NUMBER}.vsix
       - name: Publish to OpenVSX Registry
-        if: ${{ inputs.publishToOVSX == 'true' == 'true' }}
+        if: ${{ inputs.publishToOVSX == 'true' }}
         run: |
           ovsx publish -p ${{ secrets.OVSX_MARKETPLACE_TOKEN }}  --packagePath vscode-devfile-${{ env.EXT_VERSION }}-${GITHUB_RUN_NUMBER}.vsix
