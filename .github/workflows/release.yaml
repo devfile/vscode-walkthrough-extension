@@ -63,6 +63,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: packaging-job
     steps:
+      - name: Check Out vscode-devfile
+        uses: actions/checkout@v2
       - name: Set Up NodeJS
         uses: actions/setup-node@v2
         with:
